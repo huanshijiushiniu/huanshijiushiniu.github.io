@@ -67,7 +67,7 @@
 <meta property="og:image" content="http://7xqgnx.com1.z0.glb.clouddn.com/MomaTech%E7%BD%91%E7%BB%9C%E5%9B%9E%E8%B0%83.png">
 <meta property="og:image" content="http://7xqgnx.com1.z0.glb.clouddn.com/MomaTechcurrentRunloop.png">
 <meta property="og:image" content="http://7xqgnx.com1.z0.glb.clouddn.com/MomaTech%E5%AE%98%E6%96%B9%E6%96%87%E6%A1%A3.png">
-<meta property="og:updated_time" content="2016-01-26T08:41:38.000Z">
+<meta property="og:updated_time" content="2016-01-26T09:11:06.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Runloop和多线程">
 <meta name="twitter:description" content="在CFRunloop中已经说明了一个线程及其runloop的对应关系 ，现在以iOS中NSThread的实际使用来说明runloop在线程中的意义。">
@@ -253,7 +253,7 @@
       
 
       
-        <p>在<a href="http://www.jianshu.com/p/b4c6930c23da" target="_blank" rel="external">CFRunloop</a>中已经说明了一个线程及其runloop的对应关系 ，现在以iOS中NSThread的实际使用来说明runloop在线程中的意义。</p>
+        <p>在<a href="http://huanshijiushiniu.github.io/2016/01/26/RunLoop%E4%BB%8B%E7%BB%8D/" target="_blank" rel="external">CFRunloop</a>中已经说明了一个线程及其runloop的对应关系 ，现在以iOS中NSThread的实际使用来说明runloop在线程中的意义。</p>
 <a id="more"></a> 
 <p>在iOS中直接使用NSThread有一下几种方式，但是归根到底，当一个线程需要长时间的去跟踪一个任务的时候，这几种方式做的事情是一样的，只不过接口名称和参数不一样，感觉是为了使用起来更加方便。因为这些接口内部都需要依赖runloop去实现事件的监听，这个可以通过调用堆栈证实。</p>
 <p><code>- (void)performSelectorInBackground:(SEL)aSelector withObject:(id)arg</code></p>
@@ -264,7 +264,7 @@
 <p>下面通过在子线程发起一个网络请求，去发现一些问题，然后通过runloop去解释原因，并推测API背后的实现方式。</p>
 <p><strong>代码1</strong></p>
 <figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (void)viewDidLoad &#123;&#10;&#10;    [super viewDidLoad];&#10;&#10;    [self performSelectorInBackground:@selector(multiThread) withObject:nil];&#10;&#125;&#10;- (void)multiThread&#10;&#10;&#123;&#10;    if (![NSThread isMainThread]) &#123;&#10;        self.request = [[NSMutableURLRequest alloc]&#10;&#10;                                        initWithURL:[NSURL URLWithString:@&#34;http://www.baidu.com&#34;]&#10;&#10;                                        cachePolicy:NSURLCacheStorageNotAllowed&#10;&#10;                                        timeoutInterval:10];&#10;&#10;        [self.request setHTTPMethod: @&#34;GET&#34;];&#10;&#10;        self.connection =[[NSURLConnection alloc] initWithRequest:self.request&#10;&#10;                                                         delegate:self&#10;&#10;                                                 startImmediately:YES];&#10;    &#125;&#10;&#125;&#10;- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response&#123;&#10;&#10;    NSLog(@&#34;network callback&#34;);&#10;&#10;&#125;</span><br></pre></td></tr></table></figure>
-<p>运行之后，可以发现在子线程中发起的网络请求，回调没有被调用。根据<a href="http://www.jianshu.com/p/b4c6930c23da" target="_blank" rel="external">CFRunloop</a>介绍的知识可以大致猜测可能跟runloop有关系，也就是子线程的runloop中没有注册网络回调的消息，所以该子线程自己相关的runloop没有收到回调。实际上     </p>
+<p>运行之后，可以发现在子线程中发起的网络请求，回调没有被调用。根据<a href="http://huanshijiushiniu.github.io/2016/01/26/RunLoop%E4%BB%8B%E7%BB%8D/" target="_blank" rel="external">CFRunloop</a>介绍的知识可以大致猜测可能跟runloop有关系，也就是子线程的runloop中没有注册网络回调的消息，所以该子线程自己相关的runloop没有收到回调。实际上     </p>
 <p><code>- (instancetype)initWithRequest:(NSURLRequest *)request delegate:(id)delegate startImmediately:(BOOL)</code></p>
 <p> 这个方法的第三个参数的bool值表示是否在创建完NSURLConnection对象之后立刻发起请求，一般情况下是YES，什么时候会传NO呢。</p>
 <p>事实上，对于以上这种方式创建的线程，默认是没有生成该线程对应的runloop的。也就是说这种情况下，需要自己去创建对应线程的runloop，并且让他run起来，去不断监听各种往runloop里注册的消息。但是对于主线程而言，其对应的runloop会由系统建立，并且自己run起来。由于平时工作在主线程下，这些工作大部分情况下不需要人为参与，所以一到子线程就会有各种问题。子线程中起timer没有生效也是相同的原因。所以以上函数第三个参数的意思就是，如果是当前线程已经runloop跑起来的情况下，传YES。除此之外，需要自己创建runloop去run，再将网络请求消息注册到runloop中。</p>
