@@ -222,7 +222,7 @@
               
                 
                 <a class="post-title-link" href="/2016/01/26/hexo-github搭建个人博客/" itemprop="url">
-                  hexo+github搭建博客
+                  未命名
                 </a>
               
             
@@ -235,7 +235,7 @@
               <i class="fa fa-calendar-o"></i>
             </span>
             <span class="post-meta-item-text">發表於</span>
-            <time itemprop="dateCreated" datetime="2016-01-26T16:00:42+08:00" content="2016-01-26">
+            <time itemprop="dateCreated" datetime="2016-01-26T16:33:59+08:00" content="2016-01-26">
               2016-01-26
             </time>
           </span>
@@ -270,13 +270,15 @@
       
         
           
-            <p>前提环境：node.js git</p>
-<h4 id="1-hexo_u5B89_u88C5"><a href="#1-hexo_u5B89_u88C5" class="headerlink" title="1.hexo安装"></a>1.hexo安装</h4><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mkdir MyBlog&#10;cd MyBlog&#10;hexo init&#10;npm install&#10;hexo server</span><br></pre></td></tr></table></figure>
+            <p>title: hexo+github搭建博客</p>
+<p>date: 2016-01-26 16:00:42</p>
+<h2 id="tags_3A_hexo"><a href="#tags_3A_hexo" class="headerlink" title="tags: hexo"></a>tags: hexo</h2><p>前提环境：node.js git</p>
+<h4 id="hexo_u5B89_u88C5"><a href="#hexo_u5B89_u88C5" class="headerlink" title="hexo安装"></a>hexo安装</h4><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mkdir MyBlog&#10;cd MyBlog&#10;hexo init&#10;npm install&#10;hexo server</span><br></pre></td></tr></table></figure>
 <p>这个时候应该在console会显示：</p>
 <p> Hexo is running at <a href="http://0.0.0.0:4000/" target="_blank" rel="external">http://0.0.0.0:4000/</a>.</p>
 <p>这个时候直接访问该地址，即部署到本地的博客：</p>
 <p><img src="http://7xqgnx.com1.z0.glb.clouddn.com/localBlog.png" alt="本地hexo博客"></p>
-<h3 id="2-_u516C_u94A5_u548C_u79C1_u94A5_u751F_u6210_u53CA_u5176_u914D_u7F6E"><a href="#2-_u516C_u94A5_u548C_u79C1_u94A5_u751F_u6210_u53CA_u5176_u914D_u7F6E" class="headerlink" title="2.公钥和私钥生成及其配置"></a>2.公钥和私钥生成及其配置</h3><p>进入~/.ssh目录，目录中可能已经存在其他公钥和私钥对，现在要专门添加一个新的公私钥对。</p>
+<h4 id="u516C_u94A5_u548C_u79C1_u94A5_u751F_u6210_u53CA_u5176_u914D_u7F6E"><a href="#u516C_u94A5_u548C_u79C1_u94A5_u751F_u6210_u53CA_u5176_u914D_u7F6E" class="headerlink" title="公钥和私钥生成及其配置"></a>公钥和私钥生成及其配置</h4><p>进入~/.ssh目录，目录中可能已经存在其他公钥和私钥对，现在要专门添加一个新的公私钥对。</p>
 <figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">//&#20197;&#25351;&#23450;&#21517;&#31216;&#29983;&#25104;&#20844;&#31169;&#38053;&#23545;&#10;ssh-keygen -t rsa -C &#34;B&#34; -f B</span><br></pre></td></tr></table></figure>
 <p>然后将公钥添加到github账号下</p>
 <p>这个时候，.ssh目录下应该有多对公私钥，现在查看密钥列表</p>
@@ -292,7 +294,7 @@
 <p>输出：</p>
 <p>Hi yourName! You’ve successfully authenticated, but GitHub does not provide shell access.</p>
 <p>说明已经成功</p>
-<h4 id="3-_u5728github_u4E0A_u65B0_u5EFArepo_uFF0C_u4EE5yourName-github-io_u65B9_u5F0F_u547D_u540D_28_u5FC5_u987B_29_uFF0CyouName_u662Fgithub_u4E0A_u7684_u8D26_u53F7_u540D_u79F0_u3002"><a href="#3-_u5728github_u4E0A_u65B0_u5EFArepo_uFF0C_u4EE5yourName-github-io_u65B9_u5F0F_u547D_u540D_28_u5FC5_u987B_29_uFF0CyouName_u662Fgithub_u4E0A_u7684_u8D26_u53F7_u540D_u79F0_u3002" class="headerlink" title="3.在github上新建repo，以yourName.github.io方式命名(必须)，youName是github上的账号名称。"></a>3.在github上新建repo，以yourName.github.io方式命名(必须)，youName是github上的账号名称。</h4><h4 id="4-_u914D_u7F6Ehexo_u90E8_u7F72_u5230github"><a href="#4-_u914D_u7F6Ehexo_u90E8_u7F72_u5230github" class="headerlink" title="4.配置hexo部署到github"></a>4.配置hexo部署到github</h4><figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">vim</span> _<span class="tag">config</span><span class="class">.yml</span></span><br></pre></td></tr></table></figure>
+<h4 id="u5728github_u4E0A_u65B0_u5EFArepo_uFF0C_u4EE5yourName-github-io_u65B9_u5F0F_u547D_u540D_28_u5FC5_u987B_29_uFF0CyouName_u662Fgithub_u4E0A_u7684_u8D26_u53F7_u540D_u79F0_u3002"><a href="#u5728github_u4E0A_u65B0_u5EFArepo_uFF0C_u4EE5yourName-github-io_u65B9_u5F0F_u547D_u540D_28_u5FC5_u987B_29_uFF0CyouName_u662Fgithub_u4E0A_u7684_u8D26_u53F7_u540D_u79F0_u3002" class="headerlink" title="在github上新建repo，以yourName.github.io方式命名(必须)，youName是github上的账号名称。"></a>在github上新建repo，以yourName.github.io方式命名(必须)，youName是github上的账号名称。</h4><h4 id="u914D_u7F6Ehexo_u90E8_u7F72_u5230github"><a href="#u914D_u7F6Ehexo_u90E8_u7F72_u5230github" class="headerlink" title="配置hexo部署到github"></a>配置hexo部署到github</h4><figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">vim</span> _<span class="tag">config</span><span class="class">.yml</span></span><br></pre></td></tr></table></figure>
 <figure class="highlight less"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">deploy</span>:</span><br><span class="line">  <span class="attribute">type</span>: git</span><br><span class="line">  <span class="attribute">repository</span>: git<span class="variable">@myBlog</span>:yourName/yourName.github.io.git</span><br><span class="line">  <span class="attribute">branch</span>: master</span><br></pre></td></tr></table></figure>
 <p>hexo配置文件的语法是冒号后面必须有空格，否则在之后部署的时候会报错。</p>
 <p>然后执行如下命令，安装git部署的工具:</p>
