@@ -68,7 +68,7 @@
 <link href="/css/main.css?v=5.0.2" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="技术之外," />
+  <meta name="keywords" content="源码阅读," />
 
 
 
@@ -84,16 +84,37 @@
 
 
 
-<meta name="description" content="以前思考人生的意义，不知道为什么要工作，每天也不知道要干什么，后来看了活着这部小说，人生的意义就是活好。">
+<meta name="description" content="AFURLConnectionOperationAFURLConnectionOperation继承自NSOpeartion，并且实现了NSURLConnection协议， 主要功能：
+ 全局网络线程的创建
+
+使用网络线程创建NSURLConnection发送请求，以及实现NSURLConenction代理方法来处理请求的返回数据。
+
+向用户发送请求的各种消息。
+
+控制着请求的生命周期，暂停，恢复">
 <meta property="og:type" content="article">
-<meta property="og:title" content="人生的意义">
-<meta property="og:url" content="http://yoursite.com/2016/01/26/人生的意义就是活着活好/index.html">
+<meta property="og:title" content="AFNetworking 源码分析总结4">
+<meta property="og:url" content="http://yoursite.com/2016/10/13/AFNetworking 源码分析总结4 NSURLConnection/index.html">
 <meta property="og:site_name" content="郑智文">
-<meta property="og:description" content="以前思考人生的意义，不知道为什么要工作，每天也不知道要干什么，后来看了活着这部小说，人生的意义就是活好。">
-<meta property="og:updated_time" content="2016-01-29T06:38:33.000Z">
+<meta property="og:description" content="AFURLConnectionOperationAFURLConnectionOperation继承自NSOpeartion，并且实现了NSURLConnection协议， 主要功能：
+ 全局网络线程的创建
+
+使用网络线程创建NSURLConnection发送请求，以及实现NSURLConenction代理方法来处理请求的返回数据。
+
+向用户发送请求的各种消息。
+
+控制着请求的生命周期，暂停，恢复">
+<meta property="og:updated_time" content="2016-10-13T14:20:27.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="人生的意义">
-<meta name="twitter:description" content="以前思考人生的意义，不知道为什么要工作，每天也不知道要干什么，后来看了活着这部小说，人生的意义就是活好。">
+<meta name="twitter:title" content="AFNetworking 源码分析总结4">
+<meta name="twitter:description" content="AFURLConnectionOperationAFURLConnectionOperation继承自NSOpeartion，并且实现了NSURLConnection协议， 主要功能：
+ 全局网络线程的创建
+
+使用网络线程创建NSURLConnection发送请求，以及实现NSURLConenction代理方法来处理请求的返回数据。
+
+向用户发送请求的各种消息。
+
+控制着请求的生命周期，暂停，恢复">
 
 
 
@@ -114,10 +135,10 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2016/01/26/人生的意义就是活着活好/"/>
+  <link rel="canonical" href="http://yoursite.com/2016/10/13/AFNetworking 源码分析总结4 NSURLConnection/"/>
 
 
-  <title> 人生的意义 | 郑智文 </title>
+  <title> AFNetworking 源码分析总结4 | 郑智文 </title>
 </head>
 
 <body itemscope itemtype="//schema.org/WebPage" lang="zh-CN">
@@ -237,7 +258,7 @@
             
             
               
-                人生的意义
+                AFNetworking 源码分析总结4
               
             
           </h1>
@@ -249,8 +270,8 @@
               <i class="fa fa-calendar-o"></i>
             </span>
             <span class="post-meta-item-text">發表於</span>
-            <time itemprop="dateCreated" datetime="2016-01-26T16:43:10+08:00" content="2016-01-26">
-              2016-01-26
+            <time itemprop="dateCreated" datetime="2016-10-13T22:12:31+08:00" content="2016-10-13">
+              2016-10-13
             </time>
           </span>
 
@@ -260,8 +281,8 @@
             
               <span class="post-comments-count">
                 &nbsp; | &nbsp;
-                <a href="/2016/01/26/人生的意义就是活着活好/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/01/26/人生的意义就是活着活好/" itemprop="commentsCount"></span>
+                <a href="/2016/10/13/AFNetworking 源码分析总结4 NSURLConnection/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/13/AFNetworking 源码分析总结4 NSURLConnection/" itemprop="commentsCount"></span>
                 </a>
               </span>
             
@@ -284,7 +305,78 @@
       
 
       
-        <pre><code>以前思考人生的意义，不知道为什么要工作，每天也不知道要干什么，后来看了活着这部小说，人生的意义就是活好。
+        <h2 id="AFURLConnectionOperation"><a href="#AFURLConnectionOperation" class="headerlink" title="AFURLConnectionOperation"></a>AFURLConnectionOperation</h2><p>AFURLConnectionOperation继承自NSOpeartion，并且实现了NSURLConnection协议， 主要功能：</p>
+<pre><code> 全局网络线程的创建
+
+使用网络线程创建NSURLConnection发送请求，以及实现NSURLConenction代理方法来处理请求的返回数据。
+
+向用户发送请求的各种消息。
+
+控制着请求的生命周期，暂停，恢复，取消。
+
+可以监听处理批量请求的完成度，有多少个请求已经完成。
+
+请求结束之后调用回调用户的业务逻辑
+</code></pre><p>AFURLConnectionOperation的组成：</p>
+<pre><code> networkRequestThread 全局的网络线程对象，用于所有网络请求对象NSURLConnection的初始化|暂停|取消|。与NSURLConnection相关的逻辑都是由它来完成的。
+
+ NSURLRequest 包含了一个网络请求的封装。
+
+ NSURLResponse 包含了一个网络返回的封装，它是在connection:didReceiveResponse的方法中设置。
+
+ NSData responseData 网络返回的数据，在connectionDidFinishLoading方法中获取。
+
+ NSInputStream 一个用于读取数据的流，是为NSURLRequest httpBody准备的。
+
+ NSOutputStream 一个用户获取网络返回数据的流，在Connection:didReceiveData中将返回的数据一部分一部分的读入,然后在connectionDidFinishLoading方法中将数据填充到responseData中。相当于所有下载的数据会缓存到NSOutputStream中，最后请求结束之后在创建一个完整的responseData。
+
+ completionQueue 队列，用于当请求结束的时候将后续的用户业务逻辑以bock的方法放到该队列中执行。
+
+ completionGroup  组，用于上一条的队列，它是和batchOfRequestOperations:progressBlock:completionBlock:方法联合起来使用的，通过dispatch_group_t派发组，可以监听多个请求的返回结果的处理完成的事件以及最后所有的请求处理完成的事件。
+
+AFNetworkingOperationDidStartNotification，定义用于向用户发送网络请求已经开始的通知。
+
+AFNetworkingOperationDidFinishNotification，定义用于向用户发送网络请求已经结束的通知，在暂停|请求成功|请求失败的时候都会触发，参数是Operation自身。
+
+completionBlock，在NSOperation结束的时候触发，用来处理请求结束之后的业务逻辑，结束指的是请求成功|失败|暂停|取消。
+
+error，用于保存请求中发生的任务错误信息。
+</code></pre><h2 id="AFHTTPRequestOperation"><a href="#AFHTTPRequestOperation" class="headerlink" title="AFHTTPRequestOperation"></a>AFHTTPRequestOperation</h2><p>AFHTTPRequestOperation继承自AFURLConnectionOperation,它区别与后者的部分</p>
+<pre><code>组成：
+
+          responseSerializationError 用于保存反序列化的过程中发生的错误
+
+          responseSerializer 它是用于请求结果反序列化的对象，具体可以参考源码分析总结2，默认是AFHTTPResponseSerializer。
+
+
+
+          responseObject, 它是具体的业务对象的数据(常用的数据形式，还不是业务model层)， 它是通过responseSerializer反序列化而来
+
+
+
+功能：
+
+           重写了父类的pause方法，在暂停的时候，对请求对象Request的header做了修改，通过response的ETag字段，设置了请求头If-Range字段。用来实现断点续传的效果，但是仅仅是在app还在运行状态的时候有用。如果app退出则无效果，因为数据是通过NSOutputStream缓存在内存中的，而且If-Range这些信息也仅仅存在于内存对象中。
+
+
+
+           重写了error方法，优先返回反序列化错误，后返回父类请求中发生的错误。
+
+
+
+           定义了自己的setCompletionBlockWithSuccess:failure:方法，先检查是否有父类的请求错误，再进行反序列化，最后才会回调请求成功的业务逻辑。
+</code></pre><h2 id="AFHTTPRequestOperationManager"><a href="#AFHTTPRequestOperationManager" class="headerlink" title="AFHTTPRequestOperationManager"></a>AFHTTPRequestOperationManager</h2><p>AFHTTPRequestOperationManager是用来管理请求的BaseURL以及多个具体的请求，维护着一个请求队列，请求参数序列化的过程中产生的错误由它以回调的方式告知用户。</p>
+<pre><code>组成：
+
+          baseURL 用于保存请求的域
+
+          requestSerializer 用于某一个请求的参数序列化对象，它的作用就是生成一个NSMutableURLRequest请求对象，该对象最终用于生成AFHTTPRequestOperation对象，默认是AFHTTPRequestSerializer对象。
+
+          responseSerializer 用于某一个请求的返回数据的反序列化，是由AFHTTPRequestOperationManager保存，用来给AFHTTPRequestOperation设置反序列化对象。
+
+          operationQueue 存放每个请求的队列，放到队列的请求由系统分配线程完成请求。
+
+          reachabilityManager 用于判断网络是否可用的组件
 </code></pre>
       
     </div>
@@ -307,7 +399,7 @@
       
         <div class="post-tags">
           
-            <a href="/tags/技术之外/" rel="tag">#技术之外</a>
+            <a href="/tags/源码阅读/" rel="tag">#源码阅读</a>
           
         </div>
       
@@ -316,16 +408,16 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2016/01/26/hexo-github搭建个人博客/" rel="next" title="hexo+github搭建博客">
-                <i class="fa fa-chevron-left"></i> hexo+github搭建博客
+              <a href="/2016/10/13/AFNetworking源码分析3-返回参数反序列化/" rel="next" title="AFNetworking源码分析3-返回数据的反序列化">
+                <i class="fa fa-chevron-left"></i> AFNetworking源码分析3-返回数据的反序列化
               </a>
             
           </div>
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2016/01/26/RunLoop介绍/" rel="prev" title="RunLoop介绍">
-                RunLoop介绍 <i class="fa fa-chevron-right"></i>
+              <a href="/2016/10/13/AFNetWorking源码分析总结5——NSURLSession/" rel="prev" title="AFNetWorking源码分析总结5——NSURLSession">
+                AFNetWorking源码分析总结5——NSURLSession <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -352,8 +444,8 @@
           
   <div class="comments" id="comments">
     
-      <div class="ds-thread" data-thread-key="2016/01/26/人生的意义就是活着活好/"
-           data-title="人生的意义" data-url="http://yoursite.com/2016/01/26/人生的意义就是活着活好/">
+      <div class="ds-thread" data-thread-key="2016/10/13/AFNetworking 源码分析总结4 NSURLConnection/"
+           data-title="AFNetworking 源码分析总结4" data-url="http://yoursite.com/2016/10/13/AFNetworking 源码分析总结4 NSURLConnection/">
       </div>
     
   </div>
@@ -437,7 +529,7 @@
               
             
             
-              <p class="post-toc-empty">此文章未包含目錄</p>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#AFURLConnectionOperation"><span class="nav-number">1.</span> <span class="nav-text">AFURLConnectionOperation</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#AFHTTPRequestOperation"><span class="nav-number">2.</span> <span class="nav-text">AFHTTPRequestOperation</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#AFHTTPRequestOperationManager"><span class="nav-number">3.</span> <span class="nav-text">AFHTTPRequestOperationManager</span></a></li></ol></div>
             
           </div>
         </section>

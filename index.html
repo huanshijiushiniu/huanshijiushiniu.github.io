@@ -105,7 +105,7 @@
     motion: true,
     duoshuo: {
       userId: '0',
-      author: 'Penulis'
+      author: '博主'
     }
   };
 </script>
@@ -176,7 +176,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
-            Beranda
+            首頁
           </a>
         </li>
       
@@ -186,7 +186,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
-            Arsip
+            歸檔
           </a>
         </li>
       
@@ -196,7 +196,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
             
-            Tags
+            標籤
           </a>
         </li>
       
@@ -239,6 +239,444 @@
             
               
                 
+                <a class="post-title-link" href="/2016/10/13/AFNetWorking源码分析总结5——NSURLSession/" itemprop="url">
+                  AFNetWorking源码分析总结5——NSURLSession
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">發表於</span>
+            <time itemprop="dateCreated" datetime="2016-10-13T22:12:31+08:00" content="2016-10-13">
+              2016-10-13
+            </time>
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/10/13/AFNetWorking源码分析总结5——NSURLSession/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/13/AFNetWorking源码分析总结5——NSURLSession/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>NSURLSession是iOS 7推出的新一代网络框架，在NSURLConnection的基础上多了一种选择，AFNetworking基于NSURLSession也实现了相应的网络请求API。从功能模块划分，网络可用性，数据的序列化和反序列化以及安全策略这几部分都是一样的，主要是网络请求的管理，请求和返回的处理比前者更加简单，应该说NSURLSession从系统层面实现了NSURLConnection没有实现的部分，比如管理多个请求，直接面向应用层提供上传下载的接口，所以AFNetworking基于NSRULSession实现的网络层更简单，但是功能上没有NSURLConnection那么丰富，比如监听所有任务中完成任务的进度，还有和UIKit的集成。</p>
+<h2 id="AFURLSessionManager"><a href="#AFURLSessionManager" class="headerlink" title="AFURLSessionManager"></a>AFURLSessionManager</h2><pre><code>组成：
+
+            session NSURLSession 支持多个以task (网络请求)的管理，是网络层的核心。有 NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSessionDataDelegate, NSURLSessionDownloadDelegate 多个代理接口。
+
+            operationQueue 用于初始化NSURLSession的队列，网络请求返回的回调会在该队列中的线程执行。类比使用NSURLConnection的时候，也有一个OperationQueue，功能基本一样，虽然NSURLConnection自己就是异步线程去发起网络请求，但是如果不使用NSOpeartion和OperationQueue，网络回调都将正在主线程中执行，会影响UI操作的流畅性。在NSURLConnection的实现部分，是通过全局的网络线程去执行回调的。这是NSURLConnection和NSURLSession不太一致的地方，后者是系统层就处理了，比NSURLConnection方便不少。
+
+             responseSerializer 用于返回数据的反序列化的对象
+
+             tasks NSURLSession管理的所有网络请求包含重复的，分为一般的api请求,上传请求和下载请求。
+
+             dataTasks 一般的api请求
+
+             uploadTasks 上传请求
+
+             downloadTasks 下载请求
+
+             completionQueue 用户端的回调所在的队列
+
+             completionGroup 用户端回调队列所在的组
+
+             AFURLSessionManagerTaskDelegagate  在AFURLSessionManager内部用于存储task相关数据的业务对象，详细内容下面会单独介绍。
+
+             mutableTaskDelegatesKeyedByTaskIdentifier 可变字典，用于存储task和对应delegate之间的关联。
+
+             剩下的就是在网络请求过程中各种状态的回调block对象了。
+</code></pre><h2 id="AFURLSessionManagerTaskDelegate"><a href="#AFURLSessionManagerTaskDelegate" class="headerlink" title="AFURLSessionManagerTaskDelegate"></a>AFURLSessionManagerTaskDelegate</h2><pre><code>在网络请求的各种回调过程中，它用来存储和记录与单个task相关的信息，在网络请求完成之后，将数据返回给用户端。
+
+组成：
+
+             AFURLSessionManager  在AFURLSessionManagerTaskDelegate对象中记录的session对象，一个session对象对应这多个task对象，每个task都有一个与之对应的AFURLSessionManagerTaskDelegate对象。  每一个task在session层面都共享了一些数据，比如序列化对象，回调的队列和组，当一个task完成的时候，都需要从共享的session中获取这些数据来完成业务层的回调逻辑。
+
+             mutableData 存储了当前请求获得的返回的数据信息，最后会反序列化成对象或者是以文件的形式保存下来。
+
+             progress 记录了下载或者上传文件的进度，可以随时通过uploadProgressForTask来获取某个task完成情况，该方法参数为当前task。
+
+             AFURLSessionTaskCompletionHandler 由用户端设置的，task请求完成之后的用户端回调block
+
+             AFURLSessionDownloadTaskDidFinishDownloadingBlock 由用户端设置的，task下载文件完成之后生成目标文件的保存路径的block
+
+             downloadFileURL 由上一个block生成的目标文件保存路径，在下载完成的回调中设置，然后在整个请求完成的回调中以通知的形式返回给用户端
+</code></pre><h2 id="AFURLSessionManager_u4E0EAFURLSessionManagerTaskDelegate_u7684_u5173_u7CFB"><a href="#AFURLSessionManager_u4E0EAFURLSessionManagerTaskDelegate_u7684_u5173_u7CFB" class="headerlink" title="AFURLSessionManager与AFURLSessionManagerTaskDelegate的关系"></a>AFURLSessionManager与AFURLSessionManagerTaskDelegate的关系</h2><pre><code>在AFURLSessionManager中实现了大部分NSURLSession的协议，而AFURLSessionManagerTaskDelegate也实现了几个重要的协议，比如数据获取，整个task请求完成，文件下载和上传的进度。不同之处在于AFURLSessionManager是针对所有请求的，而taskDelegate只是针对某次具体的请求的。taskDelegate并没有直接从系统层获得回调，而是所有的回调都会先经过AFURLSessionManager处理，然后再分发给每个具体的taskDelegate，由每个taskDelegate自己存储并记录与当前请求相关的数据和信息。至于AFURLSessionManagerTaskDelegate中会有类似以下的回调的实现逻辑：
+</code></pre><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (void)URLSession:(__unused NSURLSession *)session&#10; &#10;              task:(__unused NSURLSessionTask *)task&#10; &#10;   didSendBodyData:(__unused int64_t)bytesSent&#10; &#10;    totalBytesSent:(int64_t)totalBytesSent&#10; &#10;totalBytesExpectedToSend:(int64_t)totalBytesExpectedToSend&#10; &#10;&#123;&#10; &#10;    self.progress.totalUnitCount = totalBytesExpectedToSend;&#10; &#10;    self.progress.completedUnitCount = totalBytesSent;&#10; &#10;&#125;</span><br></pre></td></tr></table></figure>
+<p> task的delegate在这里只获取有用的数据，保存了上传的进度，这样做的目的就是为了保持代码一致性。阅读起来更容理解，相当于代理方法的分发。</p>
+<p>sessionManager里通过字典存下了所有的task，而又在具体的session回调中去处理每个task相关的逻辑。</p>
+<h2 id="AFHTTPSessionManager"><a href="#AFHTTPSessionManager" class="headerlink" title="AFHTTPSessionManager"></a>AFHTTPSessionManager</h2><pre><code>它集成自AFURLSessionManager，主要功能增加了一些初始化的方法以及对序列化和反序列化阶段的错误检查，还有设置具体的序列化对象。只是在AFURLSessionManager的基础上做了更容易使用的接口的封装。
+</code></pre><h2 id="NSURLSession_u548CNSURLConnection"><a href="#NSURLSession_u548CNSURLConnection" class="headerlink" title="NSURLSession和NSURLConnection"></a>NSURLSession和NSURLConnection</h2><pre><code>AFNetworking中NSRULSession的实现上的设计上基本是一致的，AFURLSessionManager相当于AFHTTPRequestOperationManager。而AFURLConnectionOperation类似与NSURLSessionTask。但是对网络回调的实现上是不一致的，前者是依赖NSURLSession处理，然后分发给每个task自己处理。而NSURLConnection是每个请求都是独立处理各自来自系统层的网络回调，这是由于采用了不同的系统网络框架造成的。两种实现都有一个问题，就是如果baseURL是经常变化的，下载某一个素材的时候，这个时候比较好的办法是只使用NSRULConnection中的AFURLConnectionPeration，每次url由自己指定，自己去维护OperationQueue，可能需要自己实现AFHTTPRequestOperationManager的部分。
+</code></pre>
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="//schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2016/10/13/AFNetworking 源码分析总结4 NSURLConnection/" itemprop="url">
+                  AFNetworking 源码分析总结4
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">發表於</span>
+            <time itemprop="dateCreated" datetime="2016-10-13T22:12:31+08:00" content="2016-10-13">
+              2016-10-13
+            </time>
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/10/13/AFNetworking 源码分析总结4 NSURLConnection/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/13/AFNetworking 源码分析总结4 NSURLConnection/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="AFURLConnectionOperation"><a href="#AFURLConnectionOperation" class="headerlink" title="AFURLConnectionOperation"></a>AFURLConnectionOperation</h2><p>AFURLConnectionOperation继承自NSOpeartion，并且实现了NSURLConnection协议， 主要功能：</p>
+<pre><code> 全局网络线程的创建
+
+使用网络线程创建NSURLConnection发送请求，以及实现NSURLConenction代理方法来处理请求的返回数据。
+
+向用户发送请求的各种消息。
+
+控制着请求的生命周期，暂停，恢复，取消。
+
+可以监听处理批量请求的完成度，有多少个请求已经完成。
+
+请求结束之后调用回调用户的业务逻辑
+</code></pre><p>AFURLConnectionOperation的组成：</p>
+<pre><code> networkRequestThread 全局的网络线程对象，用于所有网络请求对象NSURLConnection的初始化|暂停|取消|。与NSURLConnection相关的逻辑都是由它来完成的。
+
+ NSURLRequest 包含了一个网络请求的封装。
+
+ NSURLResponse 包含了一个网络返回的封装，它是在connection:didReceiveResponse的方法中设置。
+
+ NSData responseData 网络返回的数据，在connectionDidFinishLoading方法中获取。
+
+ NSInputStream 一个用于读取数据的流，是为NSURLRequest httpBody准备的。
+
+ NSOutputStream 一个用户获取网络返回数据的流，在Connection:didReceiveData中将返回的数据一部分一部分的读入,然后在connectionDidFinishLoading方法中将数据填充到responseData中。相当于所有下载的数据会缓存到NSOutputStream中，最后请求结束之后在创建一个完整的responseData。
+
+ completionQueue 队列，用于当请求结束的时候将后续的用户业务逻辑以bock的方法放到该队列中执行。
+
+ completionGroup  组，用于上一条的队列，它是和batchOfRequestOperations:progressBlock:completionBlock:方法联合起来使用的，通过dispatch_group_t派发组，可以监听多个请求的返回结果的处理完成的事件以及最后所有的请求处理完成的事件。
+
+AFNetworkingOperationDidStartNotification，定义用于向用户发送网络请求已经开始的通知。
+
+AFNetworkingOperationDidFinishNotification，定义用于向用户发送网络请求已经结束的通知，在暂停|请求成功|请求失败的时候都会触发，参数是Operation自身。
+
+completionBlock，在NSOperation结束的时候触发，用来处理请求结束之后的业务逻辑，结束指的是请求成功|失败|暂停|取消。
+
+error，用于保存请求中发生的任务错误信息。
+</code></pre><h2 id="AFHTTPRequestOperation"><a href="#AFHTTPRequestOperation" class="headerlink" title="AFHTTPRequestOperation"></a>AFHTTPRequestOperation</h2><p>AFHTTPRequestOperation继承自AFURLConnectionOperation,它区别与后者的部分</p>
+<pre><code>组成：
+
+          responseSerializationError 用于保存反序列化的过程中发生的错误
+
+          responseSerializer 它是用于请求结果反序列化的对象，具体可以参考源码分析总结2，默认是AFHTTPResponseSerializer。
+
+
+
+          responseObject, 它是具体的业务对象的数据(常用的数据形式，还不是业务model层)， 它是通过responseSerializer反序列化而来
+
+
+
+功能：
+
+           重写了父类的pause方法，在暂停的时候，对请求对象Request的header做了修改，通过response的ETag字段，设置了请求头If-Range字段。用来实现断点续传的效果，但是仅仅是在app还在运行状态的时候有用。如果app退出则无效果，因为数据是通过NSOutputStream缓存在内存中的，而且If-Range这些信息也仅仅存在于内存对象中。
+
+
+
+           重写了error方法，优先返回反序列化错误，后返回父类请求中发生的错误。
+
+
+
+           定义了自己的setCompletionBlockWithSuccess:failure:方法，先检查是否有父类的请求错误，再进行反序列化，最后才会回调请求成功的业务逻辑。
+</code></pre><h2 id="AFHTTPRequestOperationManager"><a href="#AFHTTPRequestOperationManager" class="headerlink" title="AFHTTPRequestOperationManager"></a>AFHTTPRequestOperationManager</h2><p>AFHTTPRequestOperationManager是用来管理请求的BaseURL以及多个具体的请求，维护着一个请求队列，请求参数序列化的过程中产生的错误由它以回调的方式告知用户。</p>
+<pre><code>组成：
+
+          baseURL 用于保存请求的域
+
+          requestSerializer 用于某一个请求的参数序列化对象，它的作用就是生成一个NSMutableURLRequest请求对象，该对象最终用于生成AFHTTPRequestOperation对象，默认是AFHTTPRequestSerializer对象。
+
+          responseSerializer 用于某一个请求的返回数据的反序列化，是由AFHTTPRequestOperationManager保存，用来给AFHTTPRequestOperation设置反序列化对象。
+
+          operationQueue 存放每个请求的队列，放到队列的请求由系统分配线程完成请求。
+
+          reachabilityManager 用于判断网络是否可用的组件
+</code></pre>
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="//schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2016/10/13/AFNetworking源码分析3-返回参数反序列化/" itemprop="url">
+                  AFNetworking源码分析3-返回数据的反序列化
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">發表於</span>
+            <time itemprop="dateCreated" datetime="2016-10-13T22:10:34+08:00" content="2016-10-13">
+              2016-10-13
+            </time>
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/10/13/AFNetworking源码分析3-返回参数反序列化/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/13/AFNetworking源码分析3-返回参数反序列化/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="u6982_u51B5_uFF1A"><a href="#u6982_u51B5_uFF1A" class="headerlink" title="概况："></a>概况：</h2><p>这部分比较简单，一共有以下几个类：</p>
+<ul>
+<li>AFHTTPResponseSerializer</li>
+<li>AFJSONResponseSerializer  : AFHTTPResponseSerializer</li>
+<li>AFXMLParseResponseSerializer : AFHTTPResponseSerializer</li>
+<li>AFXMLDocumentResponseSerializer : AFHTTPResponseSerializer</li>
+<li>AFPropertyListResponseSerializer : AFHTTPResponseSerializer</li>
+<li>AFImageResponseSerializer : AFHTTPResponseSerializer</li>
+<li>AFCompoundResponseSerializer : AFHTTPResponseSerializer</li>
+</ul>
+<h2 id="AFHTTPResponseSerializer"><a href="#AFHTTPResponseSerializer" class="headerlink" title="AFHTTPResponseSerializer"></a>AFHTTPResponseSerializer</h2><p>这个类主要是验证response合法性，是否是有效的response</p>
+<p><strong>validateResponse:data:error:</strong></p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (BOOL)validateResponse:(NSHTTPURLResponse *)response&#10;                    data:(NSData *)data&#10;                   error:(NSError * __autoreleasing *)error&#10; &#10;&#123;&#10;    BOOL responseIsValid = YES;&#10;    NSError *validationError = nil;&#10;    if (response &#38;&#38; [response isKindOfClass:[NSHTTPURLResponse class]]) &#123;&#10;//acceptableContentTypes&#37324;&#23384;&#20648;&#20102;&#24403;&#21069;serializer&#25903;&#25345;&#30340;content-type&#65292;&#21487;&#20197;&#22312;&#19981;&#21516;&#30340;&#23376;&#31867;init&#26041;&#27861;&#20013;&#25351;&#23450;&#12290;&#10;//&#26377;&#26102;&#20505;&#65292;&#36890;&#36807;charlse&#21435;mock&#35831;&#27714;&#30340;response&#65292;&#27809;&#26377;&#36890;&#36807;rewrite&#21151;&#33021;&#37325;&#20889;content-type(&#40664;&#35748;&#26159;text/plain)&#20026;application/json&#23601;&#20250;&#34987;afnetworking&#26174;&#31034;&#35831;&#27714;&#22833;&#36133;&#65292;not accept content-type &#38169;&#35823;&#12290;&#10;        if (self.acceptableContentTypes &#38;&#38; ![self.acceptableContentTypes containsObject:[response MIMEType]]) &#123;&#10; &#10;            if ([data length] &#62; 0 &#38;&#38; [response URL]) &#123;&#10; &#10;                NSMutableDictionary *mutableUserInfo = [@&#123;&#10; &#10;                                                          NSLocalizedDescriptionKey: [NSString stringWithFormat:NSLocalizedStringFromTable(@&#34;Request failed: unacceptable content-type: %@&#34;, @&#34;AFNetworking&#34;, nil), [response MIMEType]],&#10; &#10;                                                          NSURLErrorFailingURLErrorKey:[response URL],&#10; &#10;                                                          AFNetworkingOperationFailingURLResponseErrorKey: response,&#10; &#10;                                                        &#125; mutableCopy];&#10; &#10;                if (data) &#123;&#10; &#10;                    mutableUserInfo[AFNetworkingOperationFailingURLResponseDataErrorKey] = data;&#10; &#10;                &#125;&#10; &#10;                validationError = AFErrorWithUnderlyingError([NSError errorWithDomain:AFURLResponseSerializationErrorDomain code:NSURLErrorCannotDecodeContentData userInfo:mutableUserInfo], validationError);&#10; &#10;            &#125;&#10; &#10;            responseIsValid = NO;&#10;        &#125;&#10;//acceptableStatusCodes&#23384;&#20648;&#20102;&#24403;&#21069;serializer&#25903;&#25345;&#30340;&#36820;&#22238;&#30721;&#65292;&#37324;&#38754;&#30340;&#20540;&#26159;&#22312;AFHTTPResponseSerializer&#22522;&#31867;&#10;&#35843;&#29992;init&#26041;&#27861;&#20013;&#25351;&#23450;&#30340;&#12290;&#10;        if (self.acceptableStatusCodes &#38;&#38; ![self.acceptableStatusCodes containsIndex:(NSUInteger)response.statusCode] &#38;&#38; [response URL]) &#123;&#10; &#10;            NSMutableDictionary *mutableUserInfo = [@&#123;&#10; &#10;                                               NSLocalizedDescriptionKey: [NSString stringWithFormat:NSLocalizedStringFromTable(@&#34;Request failed: %@ (%ld)&#34;, @&#34;AFNetworking&#34;, nil), [NSHTTPURLResponse localizedStringForStatusCode:response.statusCode], (long)response.statusCode],&#10; &#10;                                               NSURLErrorFailingURLErrorKey:[response URL],&#10; &#10;                                               AFNetworkingOperationFailingURLResponseErrorKey: response,&#10; &#10;                                       &#125; mutableCopy];&#10;            if (data) &#123;&#10; &#10;                mutableUserInfo[AFNetworkingOperationFailingURLResponseDataErrorKey] = data;&#10; &#10;            &#125;&#10; &#10;            validationError = AFErrorWithUnderlyingError([NSError errorWithDomain:AFURLResponseSerializationErrorDomain code:NSURLErrorBadServerResponse userInfo:mutableUserInfo], validationError);&#10;            responseIsValid = NO;&#10;        &#125;&#10;    &#125;&#10;    if (error &#38;&#38; !responseIsValid) &#123;&#10; &#10;        *error = validationError;&#10; &#10;    &#125;&#10;    return responseIsValid;&#10;&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>AFHTTPResponseSerializer</strong></p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">//&#21482;&#20570;&#20102;response&#30340;&#39564;&#35777;&#36923;&#36753;&#65292;&#20855;&#20307;&#30340;&#21453;&#24207;&#21015;&#21270;&#22312;&#21508;&#20010;&#23376;&#31867;&#20013;&#23454;&#29616;&#12290;&#10;//&#25152;&#26377;&#30340;serializer&#37117;&#35201;&#23454;&#29616;&#36825;&#20010;&#26041;&#27861;,&#22312;&#32593;&#32476;&#35831;&#27714;&#25104;&#21151;&#36820;&#22238;&#25968;&#25454;&#20043;&#21518;&#65292;AFNetworking&#23601;&#20250;&#35843;&#29992;serializer&#36825;&#20010;&#26041;&#27861;&#26469;&#21453;&#24207;&#21015;&#21270;&#12290;&#10;- (id)responseObjectForResponse:(NSURLResponse *)response&#10;                           data:(NSData *)data&#10;                          error:(NSError *__autoreleasing *)error&#10;&#123;&#10;    [self validateResponse:(NSHTTPURLResponse *)response data:data error:error];&#10;    return data;&#10;&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="AFJSONResponseSerializer"><a href="#AFJSONResponseSerializer" class="headerlink" title="AFJSONResponseSerializer"></a>AFJSONResponseSerializer</h2><p><strong>responseObjectForResponse:data:error</strong></p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (id)responseObjectForResponse:(NSURLResponse *)response&#10;                           data:(NSData *)data&#10;                          error:(NSError *__autoreleasing *)error&#10;&#123;&#10; &#10;    if (![self validateResponse:(NSHTTPURLResponse *)response data:data error:error]) &#123;&#10; &#10;        if (!error || AFErrorOrUnderlyingErrorHasCodeInDomain(*error, NSURLErrorCannotDecodeContentData, AFURLResponseSerializationErrorDomain)) &#123;&#10; &#10;            return nil;&#10; &#10;        &#125;&#10; &#10;    &#125;&#10; &#10;    // Workaround for behavior of Rails to return a single space for `head :ok` (a workaround for a bug in Safari), which is not interpreted as valid input by NSJSONSerialization.&#10; &#10;    // See https://github.com/rails/rails/issues/1742&#10; &#10;    NSStringEncoding stringEncoding = self.stringEncoding;&#10; &#10;    if (response.textEncodingName) &#123;&#10; &#10;        CFStringEncoding encoding = CFStringConvertIANACharSetNameToEncoding((CFStringRef)response.textEncodingName);&#10; &#10;        if (encoding != kCFStringEncodingInvalidId) &#123;&#10;            stringEncoding = CFStringConvertEncodingToNSStringEncoding(encoding);&#10;        &#125;&#10;    &#125;&#10; &#10;    id responseObject = nil;&#10; &#10;    NSError *serializationError = nil;&#10; &#10;    @autoreleasepool &#123;&#10; &#10;        NSString *responseString = [[NSString alloc] initWithData:data encoding:stringEncoding];&#10; &#10;        if (responseString &#38;&#38; ![responseString isEqualToString:@&#34; &#34;]) &#123;&#10; &#10;            // Workaround for a bug in NSJSONSerialization when Unicode character escape codes are used instead of the actual character&#10; &#10;            // See http://stackoverflow.com/a/12843465/157142&#10; &#10;            data = [responseString dataUsingEncoding:NSUTF8StringEncoding];&#10; &#10;            if (data) &#123;&#10; &#10;                if ([data length] &#62; 0) &#123;&#10;                    responseObject = [NSJSONSerialization JSONObjectWithData:data options:self.readingOptions error:&#38;serializationError];&#10;                &#125; else &#123;&#10;                    return nil;&#10;                &#125;&#10; &#10;            &#125; else &#123;&#10; &#10;                NSDictionary *userInfo = @&#123;&#10; &#10;                                           NSLocalizedDescriptionKey: NSLocalizedStringFromTable(@&#34;Data failed decoding as a UTF-8 string&#34;, @&#34;AFNetworking&#34;, nil),&#10; &#10;                                           NSLocalizedFailureReasonErrorKey: [NSString stringWithFormat:NSLocalizedStringFromTable(@&#34;Could not decode string: %@&#34;, @&#34;AFNetworking&#34;, nil), responseString]&#10; &#10;                                           &#125;;&#10;                serializationError = [NSError errorWithDomain:AFURLResponseSerializationErrorDomain code:NSURLErrorCannotDecodeContentData userInfo:userInfo];&#10;            &#125;&#10;        &#125;&#10;    &#125;&#10;//1.removesKeysWithNullValues&#34920;&#31034;&#24403;&#36820;&#22238;&#30340;&#25968;&#25454;dictionary&#30340;value&#20026;NSNULL&#30340;&#24773;&#20917;&#30340;&#26102;&#20505;&#65292;&#26159;&#21542;&#31227;&#38500;&#23545;&#24212;&#38190;&#20540;&#23545;&#12290;&#19981;&#22788;&#29702;&#20250;&#23548;&#33268;&#21069;&#31471;crash&#65292;&#22914;&#26524;&#19981;&#35774;&#32622;&#36825;&#20010;&#23646;&#24615;&#65292;&#40664;&#35748;&#26159;false&#10;//2.self.readingOptions&#21487;&#20197;&#26681;&#25454;&#38656;&#27714;&#29992;&#26469;&#35774;&#32622;&#26368;&#21518;&#21453;&#24207;&#21015;&#21270;&#20986;&#23383;&#20856;&#26159;&#21542;&#26410;&#21487;&#21464;&#31867;&#22411;(NSJSONReadingMutableContainers)&#65292;&#40664;&#35748;&#26159;&#19981;&#21487;&#21464;&#31867;&#22411;&#10;    if (self.removesKeysWithNullValues &#38;&#38; responseObject) &#123;&#10;        responseObject = AFJSONObjectByRemovingKeysWithNullValues(responseObject, self.readingOptions);&#10;    &#125;&#10;    if (error) &#123;&#10;        *error = AFErrorWithUnderlyingError(serializationError, *error);&#10;    &#125;&#10;    return responseObject;&#10;&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="AFCompoundResponseSerializer"><a href="#AFCompoundResponseSerializer" class="headerlink" title="AFCompoundResponseSerializer"></a>AFCompoundResponseSerializer</h2><p><strong>responseObjectForResponse:data:error:</strong></p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">//&#36825;&#20010;&#31867;&#20027;&#35201;&#26159;&#21487;&#20197;&#21512;&#24182;&#22810;&#20013;Serializer&#30340;&#21151;&#33021;&#65292;&#23384;&#20648;&#22312;self.responseSerializers&#38598;&#21512;&#20013;&#12290;&#10;- (id)responseObjectForResponse:(NSURLResponse *)response&#10;                           data:(NSData *)data&#10;                          error:(NSError *__autoreleasing *)error&#10; &#10;&#123;&#10;//&#36825;&#37324;&#27809;&#26377;&#35843;&#29992;validateResponse&#26041;&#27861;&#65292;&#22240;&#20026;&#36825;&#20010;&#31867;&#22788;&#29702;&#30340;&#19981;&#26159;&#26576;&#19968;&#20010;&#20855;&#20307;&#30340;response&#31867;&#22411;&#10;    for (id &#60;AFURLResponseSerialization&#62; serializer in self.responseSerializers) &#123;&#10;        if (![serializer isKindOfClass:[AFHTTPResponseSerializer class]]) &#123;&#10;            continue;&#10;        &#125;&#10; &#10;        NSError *serializerError = nil;&#10;        id responseObject = [serializer responseObjectForResponse:response data:data error:&#38;serializerError];&#10;        if (responseObject) &#123;&#10;            if (error) &#123;&#10;                *error = AFErrorWithUnderlyingError(serializerError, *error);&#10;            &#125;&#10; &#10;            return responseObject;&#10;        &#125;&#10; &#10;    &#125;&#10;    return [super responseObjectForResponse:response data:data error:error];&#10;&#125;</span><br></pre></td></tr></table></figure>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="//schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
                 <a class="post-title-link" href="/2016/10/13/AFNetworking源码分析2-请求参数序列化/" itemprop="url">
                   AFNetworking源码解析2-请求参数序列化
                 </a>
@@ -252,7 +690,7 @@
             <span class="post-meta-item-icon">
               <i class="fa fa-calendar-o"></i>
             </span>
-            <span class="post-meta-item-text">Diposting di</span>
+            <span class="post-meta-item-text">發表於</span>
             <time itemprop="dateCreated" datetime="2016-10-13T20:00:00+08:00" content="2016-10-13">
               2016-10-13
             </time>
@@ -390,7 +828,7 @@
             <span class="post-meta-item-icon">
               <i class="fa fa-calendar-o"></i>
             </span>
-            <span class="post-meta-item-text">Diposting di</span>
+            <span class="post-meta-item-text">發表於</span>
             <time itemprop="dateCreated" datetime="2016-01-26T17:02:11+08:00" content="2016-01-26">
               2016-01-26
             </time>
@@ -431,7 +869,7 @@
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"> <span class="keyword">struct</span> __CFRunLoopMode &#123;</span><br><span class="line">    CFRuntimeBase _base;</span><br><span class="line">    <span class="keyword">pthread_mutex_t</span> _lock;  <span class="comment">/* must have the run loop locked before locking this */</span></span><br><span class="line"><span class="comment">//mode名</span></span><br><span class="line">    CFStringRef _name;</span><br><span class="line">    Boolean _stopped;</span><br><span class="line">    <span class="keyword">char</span> _padding[<span class="number">3</span>];</span><br><span class="line"><span class="comment">//source0 源</span></span><br><span class="line">    CFMutableSetRef _sources0;</span><br><span class="line"><span class="comment">//source1 源</span></span><br><span class="line">    CFMutableSetRef _sources1;</span><br><span class="line"><span class="comment">//observer 源</span></span><br><span class="line">    CFMutableArrayRef _observers;</span><br><span class="line"><span class="comment">//timer 源</span></span><br><span class="line">    CFMutableArrayRef _timers;</span><br><span class="line"> </span><br><span class="line"><span class="comment">//mach port 到 mode的映射,为了在runloop主逻辑中过滤runloop自己的port消息。</span></span><br><span class="line">    CFMutableDictionaryRef _portToV1SourceMap;</span><br><span class="line"> </span><br><span class="line"><span class="comment">//记录了所有当前mode中需要监听的port，作为调用监听消息函数的参数。</span></span><br><span class="line">    __CFPortSet _portSet;</span><br><span class="line">    CFIndex _observerMask;</span><br><span class="line"><span class="preprocessor">#<span class="keyword">if</span> USE_DISPATCH_SOURCE_FOR_TIMERS</span></span><br><span class="line">    <span class="keyword">dispatch_source_t</span> _timerSource;</span><br><span class="line">    <span class="keyword">dispatch_queue_t</span> _queue;</span><br><span class="line">    Boolean _timerFired; <span class="comment">// set to true by the source when a timer has fired</span></span><br><span class="line">    Boolean _dispatchTimerArmed;</span><br><span class="line"><span class="preprocessor">#<span class="keyword">endif</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">if</span> USE_MK_TIMER_TOO</span></span><br><span class="line"><span class="comment">//使用 mk timer， 用到的mach port，和source1类似，都依赖于mach port</span></span><br><span class="line">    <span class="keyword">mach_port_t</span> _timerPort;</span><br><span class="line">    Boolean _mkTimerArmed;</span><br><span class="line"><span class="preprocessor">#<span class="keyword">endif</span></span></span><br><span class="line"><span class="comment">//timer触发的理想时间</span></span><br><span class="line">    <span class="keyword">uint64_t</span> _timerSoftDeadline; <span class="comment">/* TSR */</span></span><br><span class="line"><span class="comment">//timer触发的实际时间，理想时间加上tolerance（偏差）</span></span><br><span class="line">    <span class="keyword">uint64_t</span> _timerHardDeadline; <span class="comment">/* TSR */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
           <div class="post-more-link text-center">
             <a class="btn" href="/2016/01/26/RunLoop源码分析/#more" rel="contents">
-              Baca lebih &raquo;
+              閱讀全文 &raquo;
             </a>
           </div>
         
@@ -494,7 +932,7 @@
             <span class="post-meta-item-icon">
               <i class="fa fa-calendar-o"></i>
             </span>
-            <span class="post-meta-item-text">Diposting di</span>
+            <span class="post-meta-item-text">發表於</span>
             <time itemprop="dateCreated" datetime="2016-01-26T17:01:31+08:00" content="2016-01-26">
               2016-01-26
             </time>
@@ -534,7 +972,7 @@
           <h3 id="RunLoop__u7684_u6982_u5FF5"><a href="#RunLoop__u7684_u6982_u5FF5" class="headerlink" title="RunLoop 的概念"></a><strong>RunLoop 的概念</strong></h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">function <span class="title">loop</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    initialize();</span><br><span class="line">    <span class="keyword">do</span> &#123;</span><br><span class="line">        var message = get_next_message();</span><br><span class="line">        process_message(message);</span><br><span class="line">    &#125; <span class="keyword">while</span> (message != quit);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
           <div class="post-more-link text-center">
             <a class="btn" href="/2016/01/26/RunLoop介绍/#more" rel="contents">
-              Baca lebih &raquo;
+              閱讀全文 &raquo;
             </a>
           </div>
         
@@ -597,7 +1035,7 @@
             <span class="post-meta-item-icon">
               <i class="fa fa-calendar-o"></i>
             </span>
-            <span class="post-meta-item-text">Diposting di</span>
+            <span class="post-meta-item-text">發表於</span>
             <time itemprop="dateCreated" datetime="2016-01-26T16:43:10+08:00" content="2016-01-26">
               2016-01-26
             </time>
@@ -698,7 +1136,7 @@
             <span class="post-meta-item-icon">
               <i class="fa fa-calendar-o"></i>
             </span>
-            <span class="post-meta-item-text">Diposting di</span>
+            <span class="post-meta-item-text">發表於</span>
             <time itemprop="dateCreated" datetime="2016-01-26T16:00:42+08:00" content="2016-01-26">
               2016-01-26
             </time>
@@ -739,7 +1177,7 @@
 <h4 id="hexo_u5B89_u88C5"><a href="#hexo_u5B89_u88C5" class="headerlink" title="hexo安装"></a>hexo安装</h4><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mkdir MyBlog&#10;cd MyBlog&#10;npm install hexo-cli -g&#10;hexo init&#10;npm install&#10;hexo server</span><br></pre></td></tr></table></figure>
           <div class="post-more-link text-center">
             <a class="btn" href="/2016/01/26/hexo-github搭建个人博客/#more" rel="contents">
-              Baca lebih &raquo;
+              閱讀全文 &raquo;
             </a>
           </div>
         
@@ -802,7 +1240,7 @@
             <span class="post-meta-item-icon">
               <i class="fa fa-calendar-o"></i>
             </span>
-            <span class="post-meta-item-text">Diposting di</span>
+            <span class="post-meta-item-text">發表於</span>
             <time itemprop="dateCreated" datetime="2016-01-25T16:49:34+08:00" content="2016-01-25">
               2016-01-25
             </time>
@@ -842,7 +1280,7 @@
           <p>在<a href="http://huanshijiushiniu.github.io/2016/01/26/RunLoop%E4%BB%8B%E7%BB%8D/">CFRunloop</a>中已经说明了一个线程及其runloop的对应关系 ，现在以iOS中NSThread的实际使用来说明runloop在线程中的意义。</p>
           <div class="post-more-link text-center">
             <a class="btn" href="/2016/01/25/Runloop和多线程/#more" rel="contents">
-              Baca lebih &raquo;
+              閱讀全文 &raquo;
             </a>
           </div>
         
@@ -905,7 +1343,7 @@
             <span class="post-meta-item-icon">
               <i class="fa fa-calendar-o"></i>
             </span>
-            <span class="post-meta-item-text">Diposting di</span>
+            <span class="post-meta-item-text">發表於</span>
             <time itemprop="dateCreated" datetime="2016-01-25T16:38:24+08:00" content="2016-01-25">
               2016-01-25
             </time>
@@ -945,7 +1383,7 @@
           <h2 id="u57FA_u672C_u5185_u5BB9"><a href="#u57FA_u672C_u5185_u5BB9" class="headerlink" title="基本内容"></a>基本内容</h2><p>本节主要介绍iOS中多线程相关的内容，先简单介绍NSOperation的使用，然后结合GCD实现任务之间的管理，比如每个任务完成之后的处理以及任务与任务之间的依赖，所有任务完成之后的处理等，通过AFNetworking源码分析其具体实现。</p>
           <div class="post-more-link text-center">
             <a class="btn" href="/2016/01/25/AFNetworking源码解析1/#more" rel="contents">
-              Baca lebih &raquo;
+              閱讀全文 &raquo;
             </a>
           </div>
         
@@ -1015,8 +1453,8 @@
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">7</span>
-              <span class="site-state-item-name">posting</span>
+              <span class="site-state-item-count">10</span>
+              <span class="site-state-item-name">文章</span>
             </a>
           </div>
 
@@ -1025,8 +1463,8 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">5</span>
-                <span class="site-state-item-name">tags</span>
+                <span class="site-state-item-count">4</span>
+                <span class="site-state-item-name">標籤</span>
               </a>
             </div>
           
@@ -1070,11 +1508,11 @@
 </div>
 
 <div class="powered-by">
-  Powered by <a class="theme-link" href="https://hexo.io">Hexo</a>
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 強力驅動
 </div>
 
 <div class="theme-info">
-  Tema -
+  主題 -
   <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
     NexT.Muse
   </a>
