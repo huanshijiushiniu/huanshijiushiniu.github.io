@@ -1,0 +1,633 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="iOS," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.2" />
+
+
+
+
+
+
+<meta name="description" content="基本原理：MlLeaksFinder是app运行的过程中，检测内存泄漏的第三方库，可以帮助在代码调试阶段发现问题。通过method swizzled hook 对象生命周期的方法，在对象结束生命周期的时候，在指定时间之后给对象发送某个消息。如果这个时候对象已经被释放，消息不会被执行，如果没有释放说明发生了内存泄漏，消息就会被执行，从而提醒开发人员。通过递归的方式，会记录下某个视图或者control">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MLLeaksFinder源码分析">
+<meta property="og:url" content="http://yoursite.com/2016/01/25/MLLeaksFinder源码分析/index.html">
+<meta property="og:site_name" content="郑智文">
+<meta property="og:description" content="基本原理：MlLeaksFinder是app运行的过程中，检测内存泄漏的第三方库，可以帮助在代码调试阶段发现问题。通过method swizzled hook 对象生命周期的方法，在对象结束生命周期的时候，在指定时间之后给对象发送某个消息。如果这个时候对象已经被释放，消息不会被执行，如果没有释放说明发生了内存泄漏，消息就会被执行，从而提醒开发人员。通过递归的方式，会记录下某个视图或者control">
+<meta property="og:updated_time" content="2016-12-07T17:49:56.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="MLLeaksFinder源码分析">
+<meta name="twitter:description" content="基本原理：MlLeaksFinder是app运行的过程中，检测内存泄漏的第三方库，可以帮助在代码调试阶段发现问题。通过method swizzled hook 对象生命周期的方法，在对象结束生命周期的时候，在指定时间之后给对象发送某个消息。如果这个时候对象已经被释放，消息不会被执行，如果没有释放说明发生了内存泄漏，消息就会被执行，从而提醒开发人员。通过递归的方式，会记录下某个视图或者control">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2016/01/25/MLLeaksFinder源码分析/"/>
+
+
+  <title> MLLeaksFinder源码分析 | 郑智文 </title>
+</head>
+
+<body itemscope itemtype="//schema.org/WebPage" lang="zh-CN">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="//schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">郑智文</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">iOS dev</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首頁
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            歸檔
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            標籤
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="//schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                MLLeaksFinder源码分析
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">發表於</span>
+            <time itemprop="dateCreated" datetime="2016-01-25T16:38:24+08:00" content="2016-01-25">
+              2016-01-25
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分類於</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/郑智文/" itemprop="url" rel="index">
+                    <span itemprop="name">郑智文</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/01/25/MLLeaksFinder源码分析/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/01/25/MLLeaksFinder源码分析/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="u57FA_u672C_u539F_u7406_uFF1A"><a href="#u57FA_u672C_u539F_u7406_uFF1A" class="headerlink" title="基本原理："></a>基本原理：</h2><p>MlLeaksFinder是app运行的过程中，检测内存泄漏的第三方库，可以帮助在代码调试阶段发现问题。通过method swizzled hook 对象生命周期的方法，在对象结束生命周期的时候，在指定时间之后给对象发送某个消息。如果这个时候对象已经被释放，消息不会被执行，如果没有释放说明发生了内存泄漏，消息就会被执行，从而提醒开发人员。通过递归的方式，会记录下某个视图或者controller的树形节点的位置，能更好的帮助定位到具体哪个对象没有被释放。MLLeaksFinder引入了FBRetainCycleDetector，可以检查循环引用。</p>
+<p>内存泄漏分为2种，第1种是对象没有被任何引用，在内存中没有被释放。第2种是对象发生循环引用，无法被释放。在RAC的场景下，通过是2引起的内存泄漏。</p>
+<h2 id="u6E90_u7801_u5206_u6790_uFF1A"><a href="#u6E90_u7801_u5206_u6790_uFF1A" class="headerlink" title="源码分析："></a>源码分析：</h2><p>MLeaksFinder.h定义了MLeaksFinder中使用的宏</p>
+<p><strong>MLeaksFinder.h</strong></p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">#ifdef MEMORY_LEAKS_FINDER_ENABLED&#10; &#10; &#10;//_INTERNAL_MLF_ENABLED &#23439;&#29992;&#26469;&#25511;&#21046; MLLeaksFinder&#24211; &#20160;&#20040;&#26102;&#20505;&#24320;&#21551;&#26816;&#27979;&#65292;&#21487;&#20197;&#33258;&#23450;&#20041;&#36825;&#20010;&#26102;&#26426;&#65292;&#40664;&#35748;&#21017;&#26159;&#22312;DEBUG&#27169;&#24335;&#19979;&#20250;&#21551;&#21160;&#65292;RELEASE&#27169;&#24335;&#19979;&#19981;&#21551;&#21160;&#10;//&#23427;&#26159;&#36890;&#36807;&#39044;&#32534;&#35793;&#26469;&#23454;&#29616;&#30340;&#10;#define _INTERNAL_MLF_ENABLED MEMORY_LEAKS_FINDER_ENABLED&#10; &#10;#else&#10; &#10;#define _INTERNAL_MLF_ENABLED DEBUG&#10; &#10;#endif&#10; &#10;//_INTERNAL_MLF_RC_ENABLED &#23439;&#29992;&#26469;&#25511;&#21046; &#26159;&#21542;&#24320;&#21551;&#24490;&#29615;&#24341;&#29992;&#30340;&#26816;&#27979;&#10;#ifdef MEMORY_LEAKS_FINDER_RETAIN_CYCLE_ENABLED&#10; &#10;#define _INTERNAL_MLF_RC_ENABLED MEMORY_LEAKS_FINDER_RETAIN_CYCLE_ENABLED&#10; &#10; &#10;//COCOAPODS &#22240;&#20026;MLLeaksFinder&#24341;&#29992;&#20102;&#31532;&#19977;&#24211;&#29992;&#26469;&#26816;&#26597;&#24490;&#29615;&#24341;&#29992;&#65292;&#25152;&#20197;&#24517;&#39035;&#26159;&#24403;&#21069;&#39033;&#30446;&#20013;&#20351;&#29992;&#20102;COCOAPODS&#65292;&#25165;&#33021;&#20351;&#29992;&#36825;&#20010;&#21151;&#33021;&#12290;&#10;#elif COCOAPODS&#10; &#10;#define _INTERNAL_MLF_RC_ENABLED COCOAPODS&#10; &#10;#endif</span><br></pre></td></tr></table></figure>
+<p>MLLeakeObjectProxy用来对泄漏对象检查循环引用</p>
+<p><strong>MLeakedObjectProxy</strong></p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">//&#29992;&#26469;&#26816;&#26597;&#24403;&#21069;&#27844;&#28431;&#23545;&#35937;&#26159;&#21542;&#24050;&#32463;&#28155;&#21152;&#21040;&#27844;&#28431;&#23545;&#35937;&#38598;&#21512;&#20013;&#65292;&#22914;&#26524;&#26159;&#65292;&#23601;&#19981;&#20877;&#28155;&#21152;&#20063;&#19981;&#20877;&#25552;&#31034;&#24320;&#21457;&#32773;&#10;+ (BOOL)isAnyObjectLeakedAtPtrs:(NSSet *)ptrs&#10;&#123;&#10;    NSAssert([NSThread isMainThread], @&#34;Must be in main thread.&#34;);&#10;  &#10;    static dispatch_once_t onceToken;&#10;    dispatch_once(&#38;onceToken, ^&#123;&#10;//&#20840;&#23616;&#29992;&#20110;&#20445;&#23384;&#27844;&#28431;&#23545;&#35937;&#30340;&#38598;&#21512;&#10;        leakedObjectPtrs = [[NSMutableSet alloc] init];&#10;    &#125;);&#10; &#10;    if (!ptrs.count) &#123;&#10;        return NO;&#10;    &#125;&#10;//NSSet&#27714;&#20132;&#38598;&#10;    if ([leakedObjectPtrs intersectsSet:ptrs]) &#123;&#10;        return YES;&#10;    &#125; else &#123;&#10;        return NO;&#10;    &#125;&#10;&#125;&#10;+ (void)addLeakedObject:(id)object &#123;&#10; &#10;    NSAssert([NSThread isMainThread], @&#34;Must be in main thread.&#34;);&#10; &#10;     &#10;//&#21019;&#24314;&#29992;&#20110;&#26816;&#26597;&#24490;&#29615;&#24341;&#29992;&#30340;objectProxy&#23545;&#35937;&#10;    MLeakedObjectProxy *proxy = [[MLeakedObjectProxy alloc] init];&#10; &#10;    proxy.object = object;&#10; &#10;    proxy.objectPtr = @((uintptr_t)object);&#10; &#10;    proxy.viewStack = [object viewStack];&#10; &#10;    static const void *const kLeakedObjectProxyKey = &#38;kLeakedObjectProxyKey;&#10; &#10;    objc_setAssociatedObject(object, kLeakedObjectProxyKey, proxy, OBJC_ASSOCIATION_RETAIN);&#10; &#10;    [leakedObjectPtrs addObject:proxy.objectPtr];&#10; &#10;     &#10; &#10;#if _INTERNAL_MLF_RC_ENABLED&#10;//&#24102;&#26377;&#24490;&#29615;&#24341;&#29992;&#26816;&#26597;&#21151;&#33021;&#30340;&#25552;&#31034;&#26694;&#10;    [MLeaksMessenger alertWithTitle:@&#34;Memory Leak&#34;&#10; &#10;                            message:[NSString stringWithFormat:@&#34;%@&#34;, proxy.viewStack]&#10; &#10;                           delegate:proxy&#10; &#10;              additionalButtonTitle:@&#34;Retain Cycle&#34;];&#10; &#10;#else&#10;//&#26222;&#36890;&#25552;&#31034;&#26694;&#10;    [MLeaksMessenger alertWithTitle:@&#34;Memory Leak&#34;&#10; &#10;                            message:[NSString stringWithFormat:@&#34;%@&#34;, proxy.viewStack]];&#10; &#10;#endif&#10; &#10;&#125;&#10;- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex &#123;&#10; &#10;#if _INTERNAL_MLF_RC_ENABLED&#10; &#10;    dispatch_async(dispatch_get_global_queue(0, 0), ^&#123;&#10; &#10;        FBRetainCycleDetector *detector = [FBRetainCycleDetector new];&#10; &#10;        [detector addCandidate:self.object];&#10; &#10;        NSSet *retainCycles = [detector findRetainCyclesWithMaxCycleLength:20];&#10; &#10;        BOOL hasFound = NO;&#10; &#10;//retainCycles&#20013;&#26159;&#25214;&#21040;&#30340;&#25152;&#26377;&#24490;&#29615;&#24341;&#29992;&#30340;&#38142;&#10;        for (NSArray *retainCycle in retainCycles) &#123;&#10; &#10;            NSInteger index = 0;&#10; &#10;            for (FBObjectiveCGraphElement *element in retainCycle) &#123;&#10;//&#25214;&#21040;&#24403;&#21069;&#20869;&#23384;&#27844;&#28431;&#23545;&#35937;&#25152;&#22312;&#30340;&#24490;&#29615;&#24341;&#29992;&#30340;&#38142;&#10;                if (element.object == object) &#123;&#10;//&#25226;&#24403;&#21069;&#23545;&#35937;&#35843;&#25972;&#21040;&#31532;&#19968;&#20010;&#30340;&#20301;&#32622;&#65292;&#26041;&#20415;&#26597;&#30475;&#10;                    NSArray *shiftedRetainCycle = [self shiftArray:retainCycle toIndex:index];&#10;                   &#10;                    dispatch_async(dispatch_get_main_queue(), ^&#123;&#10; &#10;                        [MLeaksMessenger alertWithTitle:@&#34;Retain Cycle&#34;&#10; &#10;                                                message:[NSString stringWithFormat:@&#34;%@&#34;, shiftedRetainCycle]];&#10; &#10;                    &#125;);&#10; &#10;                    hasFound = YES;&#10; &#10;                    break;&#10; &#10;                &#125;&#10;                ++index;&#10;            &#125;&#10; &#10;            if (hasFound) &#123;&#10;                break;&#10;            &#125;&#10;        &#125;&#10; &#10;        if (!hasFound) &#123;&#10; &#10;            dispatch_async(dispatch_get_main_queue(), ^&#123;&#10; &#10;                [MLeaksMessenger alertWithTitle:@&#34;Retain Cycle&#34;&#10; &#10;                                        message:@&#34;Fail to find a retain cycle&#34;];&#10; &#10;            &#125;);&#10;        &#125;&#10;    &#125;);&#10;  &#10;#endif&#10; &#10;&#125;</span><br></pre></td></tr></table></figure>
+<p>NSObject+MemoryLeak主要功能存储对象的父子节点的树形结构，method swizzle逻辑 ，白名单以及判断对象是否发生内存泄漏</p>
+<p><strong>NSObject+MemoryLeak</strong></p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (BOOL)willDealloc &#123;&#10; &#10;    NSString *className = NSStringFromClass([self class]);&#10;//&#36890;&#36807;&#30333;&#21517;&#21333;&#21487;&#20197;&#37197;&#32622;&#21738;&#20123;&#23545;&#35937;&#19981;&#32435;&#20837;&#26816;&#26597;&#65292;&#20363;&#22914;&#19968;&#20123;&#21333;&#20363;&#10;    if ([[NSObject classNamesInWhiteList] containsObject:className])&#10; &#10;        return NO;&#10; &#10;    NSNumber *senderPtr = objc_getAssociatedObject([UIApplication sharedApplication], kLatestSenderKey);&#10; &#10;    if ([senderPtr isEqualToNumber:@((uintptr_t)self)])&#10; &#10;        return NO;&#10; &#10;    __weak id weakSelf = self;&#10;//&#22312;&#29305;&#23450;&#26102;&#38388;&#26816;&#26597;&#23545;&#35937;&#26159;&#21542;&#24050;&#32463;&#21457;&#29983;&#20869;&#23384;&#27844;&#28431;&#10;    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^&#123;&#10; &#10;        __strong id strongSelf = weakSelf;&#10;//&#22914;&#26524;&#23545;&#35937;&#24050;&#32463;&#34987;&#37322;&#25918;&#65292;strongSelf&#20026;nil &#35843;&#29992;&#35813;&#26041;&#27861;&#20160;&#20040;&#20063;&#19981;&#21457;&#29983;&#10;        [strongSelf assertNotDealloc];&#10; &#10;    &#125;);&#10; &#10;    return YES;&#10;&#125; &#10;  &#10;//&#25913;&#26041;&#27861;&#34987;&#35843;&#29992;&#35828;&#26126;&#25913;&#23545;&#35937;&#24050;&#32463;&#21457;&#29983;&#20869;&#23384;&#27844;&#28431;&#10;- (void)assertNotDealloc &#123;&#10;//&#26816;&#26597;&#26159;&#21542;&#24050;&#32463;&#35760;&#24405;&#65292;&#22914;&#26524;&#26159;&#65292;&#19981;&#20877;&#25552;&#31034;&#29992;&#25143;&#10;    if ([MLeakedObjectProxy isAnyObjectLeakedAtPtrs:[self parentPtrs]]) &#123;&#10; &#10;        return;&#10; &#10;    &#125;&#10; &#10;    [MLeakedObjectProxy addLeakedObject:self];&#10; &#10;    NSString *className = NSStringFromClass([self class]);&#10; &#10;    NSLog(@&#34;Possibly Memory Leak.\nIn case that %@ should not be dealloced, override -willDealloc in %@ by returning NO.\nView-ViewController stack: %@&#34;, className, className, [self viewStack]);&#10; &#10;&#125;&#10;  &#10;//&#20027;&#35201;&#36890;&#36807;&#36882;&#24402;&#26469;&#35760;&#24405;&#27599;&#20010;&#33410;&#28857;&#22312;&#26641;&#24418;&#32467;&#26500;&#20013;&#30340;&#20301;&#32622;&#65292;&#20197;&#21450;&#29238;&#23376;&#33410;&#28857;&#30340;&#25351;&#38024;&#10;- (void)willReleaseChildren:(NSArray *)children &#123;&#10; &#10;    NSArray *viewStack = [self viewStack];&#10; &#10;    NSSet *parentPtrs = [self parentPtrs];&#10; &#10;    for (id child in children) &#123;&#10; &#10;        NSString *className = NSStringFromClass([child class]);&#10; &#10;        [child setViewStack:[viewStack arrayByAddingObject:className]];&#10; &#10;        [child setParentPtrs:[parentPtrs setByAddingObject:@((uintptr_t)child)]];&#10; &#10;        [child willDealloc];&#10;    &#125;&#10;&#125;&#10;+ (void)swizzleSEL:(SEL)originalSEL withSEL:(SEL)swizzledSEL &#123;&#10; &#10; &#10;//&#36890;&#36807;&#39044;&#32534;&#35793;&#25511;&#21046;&#26159;&#21542;hook&#26041;&#27861;&#10;#if _INTERNAL_MLF_ENABLED&#10; &#10;     &#10;//&#36890;&#36807;&#39044;&#32534;&#35793;&#25511;&#21046;&#26159;&#21542;&#26816;&#26597;&#24490;&#29615;&#24341;&#29992;&#10;#if _INTERNAL_MLF_RC_ENABLED&#10; &#10;    // Just find a place to set up FBRetainCycleDetector.&#10; &#10;    static dispatch_once_t onceToken;&#10; &#10;    dispatch_once(&#38;onceToken, ^&#123;&#10; &#10;        dispatch_async(dispatch_get_main_queue(), ^&#123;&#10; &#10;            [FBAssociationManager hook];&#10; &#10;        &#125;);&#10; &#10;    &#125;);&#10; &#10;#endif&#10; &#10;     &#10; &#10;    Class class = [self class];&#10; &#10;     &#10; &#10;    Method originalMethod = class_getInstanceMethod(class, originalSEL);&#10; &#10;    Method swizzledMethod = class_getInstanceMethod(class, swizzledSEL);&#10; &#10;     &#10; &#10;    BOOL didAddMethod =&#10;//class_addMethod&#20027;&#35201;&#26159;&#29992;&#26469;&#32473;&#26576;&#20010;&#31867;&#28155;&#21152;&#19968;&#20010;&#26041;&#27861;&#65292;originalSEL&#30456;&#24403;&#20110;&#26159;&#26041;&#27861;&#21517;&#31216;,method_getImplementtation&#26159;&#26041;&#27861;&#23454;&#29616;, &#23427;&#36820;&#22238;&#19968;&#20010;BOOL&#31867;&#22411;&#30340;&#20540;&#10;//&#22312;&#24403;&#21069;class&#20013;&#27809;&#26377;&#21483;originalSEL&#30340;&#26041;&#27861;(&#20855;&#20307;&#19981;&#26159;&#30475;interface&#37324;&#27809;&#26377;&#27809;&#26377;&#22768;&#26126;&#65292;&#32780;&#26159;&#30475;implementaion&#25991;&#20214;&#37324;&#26377;&#27809;&#26377;&#26041;&#27861;&#23454;&#29616;)&#65292; &#24182;&#19988;&#26377;swizzledMethod&#26041;&#27861;&#30340;&#23454;&#29616;&#10;//&#36825;&#20010;&#26102;&#20505;&#35813;&#20989;&#25968;&#20250;&#36820;&#22238;true&#65292;&#20854;&#20182;&#24773;&#20917;&#22343;&#36820;&#22238;false&#10;    class_addMethod(class,&#10; &#10;                    originalSEL,&#10; &#10;                    method_getImplementation(swizzledMethod),&#10; &#10;                    method_getTypeEncoding(swizzledMethod));&#10; &#10;     &#10; &#10;    if (didAddMethod) &#123;&#10;//didAddMethod&#20026;true &#35828;&#26126;swizzledMethod&#20043;&#21069;&#19981;&#23384;&#22312;&#65292;&#36890;&#36807;class_addMethod&#20989;&#25968;&#28155;&#21152;&#20102;&#19968;&#20010;&#21517;&#23383;&#21483;origninalSEL&#65292;&#23454;&#29616;&#26159;swizzledMoethod&#20989;&#25968;&#12290;&#10;//&#36825;&#31181;&#24773;&#20917;&#21487;&#20197;&#23454;&#29616;&#20132;&#25442;&#20004;&#20010;&#26041;&#27861;&#30340;&#21516;&#26102;&#28155;&#21152;&#19968;&#20010;&#19981;&#21516;&#21517;&#23383;&#30340;&#26041;&#27861;&#12290;&#10;        class_replaceMethod(class,&#10; &#10;                            swizzledSEL,&#10; &#10;                            method_getImplementation(originalMethod),&#10; &#10;                            method_getTypeEncoding(originalMethod));&#10; &#10;    &#125; else &#123;&#10;//didAddMethod&#20026;false &#35828;&#26126;swizzledMethod&#26041;&#27861;&#24050;&#32463;&#23384;&#22312;&#65292;&#30452;&#25509;&#20132;&#25442;&#20108;&#32773;&#23454;&#29616;&#10;        method_exchangeImplementations(originalMethod, swizzledMethod);&#10; &#10;    &#125;&#10; &#10;#endif&#10; &#10;&#125;</span><br></pre></td></tr></table></figure>
+<p>UINavigationController + MemoryLeak 主要是通过UINavigationController的方法去检测子UIViewController页面的生命周期，UIViewController的生命周期由UINavigationController的方法和UIViewController自身的一些方法共同决定的。</p>
+<p><strong>UINavigationController + MemoryLeak</strong></p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">//&#29616;&#22312;&#22312;&#20855;&#20307;&#30340;&#31867;&#22411;&#20013;&#28155;&#21152;&#26041;&#27861;hook&#65292;&#21152;&#36733;load&#20013;&#24182;&#19988;&#35843;&#29992;dspatch_once&#26469;&#20445;&#35777;&#21482;&#21021;&#22987;&#21270;&#19968;&#27425;&#65292;load&#26159;&#24517;&#28982;&#20250;&#35843;&#29992;&#30340;&#65292;&#24182;&#19988;category&#30340;load&#26041;&#27861;&#35843;&#29992;&#21644;&#31867;&#33258;&#36523;&#30340;load&#26041;&#27861;&#35843;&#29992;&#26159;&#20998;&#24320;&#30340;&#65292;&#20114;&#19981;&#24178;&#25200;&#12290;&#10;+ (void)load &#123;&#10; &#10;    static dispatch_once_t onceToken;&#10; &#10;    dispatch_once(&#38;onceToken, ^&#123;&#10; &#10;        [self swizzleSEL:@selector(pushViewController:animated:) withSEL:@selector(swizzled_pushViewController:animated:)];&#10; &#10;        [self swizzleSEL:@selector(popViewControllerAnimated:) withSEL:@selector(swizzled_popViewControllerAnimated:)];&#10; &#10;        [self swizzleSEL:@selector(popToViewController:animated:) withSEL:@selector(swizzled_popToViewController:animated:)];&#10; &#10;        [self swizzleSEL:@selector(popToRootViewControllerAnimated:) withSEL:@selector(swizzled_popToRootViewControllerAnimated:)];&#10; &#10;    &#125;);&#10;&#125;&#10;  &#10;- (void)swizzled_pushViewController:(UIViewController *)viewController animated:(BOOL)animated &#123;&#10; &#10;    if (self.splitViewController) &#123;&#10;//&#36825;&#37324;&#20027;&#35201;&#26159;&#32771;&#34385;&#21040;app&#20013;&#26377;&#20351;&#29992;splitViewController&#30340;&#24773;&#20917;&#30340;&#26102;&#20505;&#65292;&#19979;&#19968;&#20010;&#26681;&#39029;&#38754;push&#20043;&#21518;&#65292;&#20043;&#21069;&#34987;pop&#30340;&#26681;&#39029;&#38754;&#25165;&#20250;&#22238;&#25910;&#10;        id detailViewController = objc_getAssociatedObject(self, kPoppedDetailVCKey);&#10; &#10;        if ([detailViewController isKindOfClass:[UIViewController class]]) &#123;&#10;//&#22238;&#25910;&#20043;&#21069;&#34987;pop&#30340;&#26681;&#39029;&#38754;&#10;            [detailViewController willDealloc];&#10; &#10;            objc_setAssociatedObject(self, kPoppedDetailVCKey, nil, OBJC_ASSOCIATION_RETAIN);&#10; &#10;        &#125;&#10; &#10;    &#125;&#10;    [self swizzled_pushViewController:viewController animated:animated];&#10; &#10;&#125;&#10;- (UIViewController *)swizzled_popViewControllerAnimated:(BOOL)animated &#123;&#10; &#10;    UIViewController *poppedViewController = [self swizzled_popViewControllerAnimated:animated];&#10; &#10;    if (!poppedViewController) &#123;&#10;        return nil;&#10;    &#125;&#10;     &#10;    //&#24403;&#21069;&#39029;&#38754;&#26159;spliteViewController&#26681;&#39029;&#38754;&#10;    if (self.splitViewController &#38;&#38;&#10; &#10;        self.splitViewController.viewControllers.firstObject == self &#38;&#38;&#10; &#10;        self.splitViewController == poppedViewController.splitViewController) &#123;&#10; &#10;        objc_setAssociatedObject(self, kPoppedDetailVCKey, poppedViewController, OBJC_ASSOCIATION_RETAIN);&#10; &#10;        return poppedViewController;&#10;    &#125;&#10;     &#10; &#10;    // VC is not dealloced until disappear when popped using a left-edge swipe gesture&#10; &#10;    extern const void *const kHasBeenPoppedKey;&#10; &#10;    objc_setAssociatedObject(poppedViewController, kHasBeenPoppedKey, @(YES), OBJC_ASSOCIATION_RETAIN);&#10; &#10;    return poppedViewController;&#10; &#10;&#125;&#10;  &#10;- (NSArray&#60;UIViewController *&#62; *)swizzled_popToViewController:(UIViewController *)viewController animated:(BOOL)animated &#123;&#10; &#10;    NSArray&#60;UIViewController *&#62; *poppedViewControllers = [self swizzled_popToViewController:viewController animated:animated];&#10;     &#10;//&#19968;&#27425;&#24615;pop&#22810;&#20010;&#39029;&#38754;&#30340;&#26102;&#20505;&#65292;&#36825;&#20123;&#39029;&#38754;&#30340;viewDidDisappear&#20272;&#35745;&#37117;&#27809;&#26377;&#34987;&#35843;&#29992;&#65292;&#30452;&#25509;&#22238;&#25910;&#20102;&#10;    for (UIViewController *viewController in poppedViewControllers) &#123;&#10; &#10;        [viewController willDealloc];&#10; &#10;    &#125;&#10; &#10;    return poppedViewControllers;&#10; &#10;&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>UIViewController + MemoryLeak</strong></p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (void)swizzled_viewDidDisappear:(BOOL)animated &#123;&#10;    [self swizzled_viewDidDisappear:animated];&#10;//&#20165;&#20165;&#24403;&#26159;pop&#24341;&#36215;viewDidDisappear&#30340;&#26102;&#20505;&#25165;&#37322;&#25918;(&#24403;&#34987;&#25377;&#20303;&#20043;&#21518;&#20063;&#20250;&#35843;&#29992;ViewDidDisappear)&#10;    if ([objc_getAssociatedObject(self, kHasBeenPoppedKey) boolValue]) &#123;&#10; &#10;        [self willDealloc];&#10; &#10;    &#125;&#10; &#10;&#125;&#10;  &#10;- (void)swizzled_dismissViewControllerAnimated:(BOOL)flag completion:(void (^)(void))completion &#123;&#10; &#10;    [self swizzled_dismissViewControllerAnimated:flag completion:completion];&#10; &#10; //dismiss&#25481;presentedViewController&#65292;&#37322;&#25918;&#23427; (&#20294;&#26159;&#20160;&#20040;&#26102;&#20505;&#24403;&#21069;viewController&#34987;&#37322;&#25918;&#21602;)&#10;    UIViewController *dismissedViewController = self.presentedViewController;&#10; &#10;    if (!dismissedViewController &#38;&#38; self.presentingViewController) &#123;&#10;//&#37322;&#25918;&#33258;&#24049;&#10;        dismissedViewController = self;&#10;    &#125;&#10; &#10;    if (!dismissedViewController) return;&#10;//&#20197;present&#20986;&#26469;&#30340;viewcontroller&#65292;&#19981;&#36890;&#36807;DidDisappear&#21435;&#21028;&#26029;&#26159;&#21542;&#37322;&#25918;&#20102;&#10;    [dismissedViewController willDealloc];&#10; &#10;&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/iOS/" rel="tag">#iOS</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/01/25/MJRefresh源码分析/" rel="next" title="MJRefresh源码分析">
+                <i class="fa fa-chevron-left"></i> MJRefresh源码分析
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/01/25/ReactCocoa源码分析1/" rel="prev" title="ReactCocoa源码分析1">
+                ReactCocoa源码分析1 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/01/25/MLLeaksFinder源码分析/"
+           data-title="MLLeaksFinder源码分析" data-url="http://yoursite.com/2016/01/25/MLLeaksFinder源码分析/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目錄
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            本站概覽
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="//schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.gif"
+               alt="郑智文" />
+          <p class="site-author-name" itemprop="name">郑智文</p>
+          <p class="site-description motion-element" itemprop="description">车到山前必有路</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">19</span>
+              <span class="site-state-item-name">文章</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              
+                <span class="site-state-item-count">1</span>
+                <span class="site-state-item-name">分類</span>
+              
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">標籤</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#u57FA_u672C_u539F_u7406_uFF1A"><span class="nav-number">1.</span> <span class="nav-text">基本原理：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#u6E90_u7801_u5206_u6790_uFF1A"><span class="nav-number">2.</span> <span class="nav-text">源码分析：</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2016</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">郑智文</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 強力驅動
+</div>
+
+<div class="theme-info">
+  主題 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.2"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"zhengzhiwen"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    <script src="/vendors/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

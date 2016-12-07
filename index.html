@@ -239,153 +239,6 @@
             
               
                 
-                <a class="post-title-link" href="/2016/10/13/AFNetWorking源码分析总结5——NSURLSession/" itemprop="url">
-                  AFNetWorking源码分析总结5——NSURLSession
-                </a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            <span class="post-meta-item-icon">
-              <i class="fa fa-calendar-o"></i>
-            </span>
-            <span class="post-meta-item-text">發表於</span>
-            <time itemprop="dateCreated" datetime="2016-10-13T22:12:31+08:00" content="2016-10-13">
-              2016-10-13
-            </time>
-          </span>
-
-          
-
-          
-            
-              <span class="post-comments-count">
-                &nbsp; | &nbsp;
-                <a href="/2016/10/13/AFNetWorking源码分析总结5——NSURLSession/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/13/AFNetWorking源码分析总结5——NSURLSession/" itemprop="commentsCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-
-          
-          
-
-          
-        </div>
-      </header>
-    
-
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>NSURLSession是iOS 7推出的新一代网络框架，在NSURLConnection的基础上多了一种选择，AFNetworking基于NSURLSession也实现了相应的网络请求API。从功能模块划分，网络可用性，数据的序列化和反序列化以及安全策略这几部分都是一样的，主要是网络请求的管理，请求和返回的处理比前者更加简单，应该说NSURLSession从系统层面实现了NSURLConnection没有实现的部分，比如管理多个请求，直接面向应用层提供上传下载的接口，所以AFNetworking基于NSRULSession实现的网络层更简单，但是功能上没有NSURLConnection那么丰富，比如监听所有任务中完成任务的进度，还有和UIKit的集成。</p>
-<h2 id="AFURLSessionManager"><a href="#AFURLSessionManager" class="headerlink" title="AFURLSessionManager"></a>AFURLSessionManager</h2><pre><code>组成：
-
-            session NSURLSession 支持多个以task (网络请求)的管理，是网络层的核心。有 NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSessionDataDelegate, NSURLSessionDownloadDelegate 多个代理接口。
-
-            operationQueue 用于初始化NSURLSession的队列，网络请求返回的回调会在该队列中的线程执行。类比使用NSURLConnection的时候，也有一个OperationQueue，功能基本一样，虽然NSURLConnection自己就是异步线程去发起网络请求，但是如果不使用NSOpeartion和OperationQueue，网络回调都将正在主线程中执行，会影响UI操作的流畅性。在NSURLConnection的实现部分，是通过全局的网络线程去执行回调的。这是NSURLConnection和NSURLSession不太一致的地方，后者是系统层就处理了，比NSURLConnection方便不少。
-
-             responseSerializer 用于返回数据的反序列化的对象
-
-             tasks NSURLSession管理的所有网络请求包含重复的，分为一般的api请求,上传请求和下载请求。
-
-             dataTasks 一般的api请求
-
-             uploadTasks 上传请求
-
-             downloadTasks 下载请求
-
-             completionQueue 用户端的回调所在的队列
-
-             completionGroup 用户端回调队列所在的组
-
-             AFURLSessionManagerTaskDelegagate  在AFURLSessionManager内部用于存储task相关数据的业务对象，详细内容下面会单独介绍。
-
-             mutableTaskDelegatesKeyedByTaskIdentifier 可变字典，用于存储task和对应delegate之间的关联。
-
-             剩下的就是在网络请求过程中各种状态的回调block对象了。
-</code></pre><h2 id="AFURLSessionManagerTaskDelegate"><a href="#AFURLSessionManagerTaskDelegate" class="headerlink" title="AFURLSessionManagerTaskDelegate"></a>AFURLSessionManagerTaskDelegate</h2><pre><code>在网络请求的各种回调过程中，它用来存储和记录与单个task相关的信息，在网络请求完成之后，将数据返回给用户端。
-
-组成：
-
-             AFURLSessionManager  在AFURLSessionManagerTaskDelegate对象中记录的session对象，一个session对象对应这多个task对象，每个task都有一个与之对应的AFURLSessionManagerTaskDelegate对象。  每一个task在session层面都共享了一些数据，比如序列化对象，回调的队列和组，当一个task完成的时候，都需要从共享的session中获取这些数据来完成业务层的回调逻辑。
-
-             mutableData 存储了当前请求获得的返回的数据信息，最后会反序列化成对象或者是以文件的形式保存下来。
-
-             progress 记录了下载或者上传文件的进度，可以随时通过uploadProgressForTask来获取某个task完成情况，该方法参数为当前task。
-
-             AFURLSessionTaskCompletionHandler 由用户端设置的，task请求完成之后的用户端回调block
-
-             AFURLSessionDownloadTaskDidFinishDownloadingBlock 由用户端设置的，task下载文件完成之后生成目标文件的保存路径的block
-
-             downloadFileURL 由上一个block生成的目标文件保存路径，在下载完成的回调中设置，然后在整个请求完成的回调中以通知的形式返回给用户端
-</code></pre><h2 id="AFURLSessionManager_u4E0EAFURLSessionManagerTaskDelegate_u7684_u5173_u7CFB"><a href="#AFURLSessionManager_u4E0EAFURLSessionManagerTaskDelegate_u7684_u5173_u7CFB" class="headerlink" title="AFURLSessionManager与AFURLSessionManagerTaskDelegate的关系"></a>AFURLSessionManager与AFURLSessionManagerTaskDelegate的关系</h2><pre><code>在AFURLSessionManager中实现了大部分NSURLSession的协议，而AFURLSessionManagerTaskDelegate也实现了几个重要的协议，比如数据获取，整个task请求完成，文件下载和上传的进度。不同之处在于AFURLSessionManager是针对所有请求的，而taskDelegate只是针对某次具体的请求的。taskDelegate并没有直接从系统层获得回调，而是所有的回调都会先经过AFURLSessionManager处理，然后再分发给每个具体的taskDelegate，由每个taskDelegate自己存储并记录与当前请求相关的数据和信息。至于AFURLSessionManagerTaskDelegate中会有类似以下的回调的实现逻辑：
-</code></pre><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (void)URLSession:(__unused NSURLSession *)session&#10; &#10;              task:(__unused NSURLSessionTask *)task&#10; &#10;   didSendBodyData:(__unused int64_t)bytesSent&#10; &#10;    totalBytesSent:(int64_t)totalBytesSent&#10; &#10;totalBytesExpectedToSend:(int64_t)totalBytesExpectedToSend&#10; &#10;&#123;&#10; &#10;    self.progress.totalUnitCount = totalBytesExpectedToSend;&#10; &#10;    self.progress.completedUnitCount = totalBytesSent;&#10; &#10;&#125;</span><br></pre></td></tr></table></figure>
-<p> task的delegate在这里只获取有用的数据，保存了上传的进度，这样做的目的就是为了保持代码一致性。阅读起来更容理解，相当于代理方法的分发。</p>
-<p>sessionManager里通过字典存下了所有的task，而又在具体的session回调中去处理每个task相关的逻辑。</p>
-<h2 id="AFHTTPSessionManager"><a href="#AFHTTPSessionManager" class="headerlink" title="AFHTTPSessionManager"></a>AFHTTPSessionManager</h2><pre><code>它集成自AFURLSessionManager，主要功能增加了一些初始化的方法以及对序列化和反序列化阶段的错误检查，还有设置具体的序列化对象。只是在AFURLSessionManager的基础上做了更容易使用的接口的封装。
-</code></pre><h2 id="NSURLSession_u548CNSURLConnection"><a href="#NSURLSession_u548CNSURLConnection" class="headerlink" title="NSURLSession和NSURLConnection"></a>NSURLSession和NSURLConnection</h2><pre><code>AFNetworking中NSRULSession的实现上的设计上基本是一致的，AFURLSessionManager相当于AFHTTPRequestOperationManager。而AFURLConnectionOperation类似与NSURLSessionTask。但是对网络回调的实现上是不一致的，前者是依赖NSURLSession处理，然后分发给每个task自己处理。而NSURLConnection是每个请求都是独立处理各自来自系统层的网络回调，这是由于采用了不同的系统网络框架造成的。两种实现都有一个问题，就是如果baseURL是经常变化的，下载某一个素材的时候，这个时候比较好的办法是只使用NSRULConnection中的AFURLConnectionPeration，每次url由自己指定，自己去维护OperationQueue，可能需要自己实现AFHTTPRequestOperationManager的部分。
-</code></pre>
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="//schema.org/Article">
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-            
-            
-              
-                
                 <a class="post-title-link" href="/2016/10/13/AFNetworking 源码分析总结4 NSURLConnection/" itemprop="url">
                   AFNetworking 源码分析总结4
                 </a>
@@ -509,6 +362,153 @@ error，用于保存请求中发生的任务错误信息。
           operationQueue 存放每个请求的队列，放到队列的请求由系统分配线程完成请求。
 
           reachabilityManager 用于判断网络是否可用的组件
+</code></pre>
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="//schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2016/10/13/AFNetWorking源码分析总结5——NSURLSession/" itemprop="url">
+                  AFNetWorking源码分析总结5——NSURLSession
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">發表於</span>
+            <time itemprop="dateCreated" datetime="2016-10-13T22:12:31+08:00" content="2016-10-13">
+              2016-10-13
+            </time>
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/10/13/AFNetWorking源码分析总结5——NSURLSession/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/13/AFNetWorking源码分析总结5——NSURLSession/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>NSURLSession是iOS 7推出的新一代网络框架，在NSURLConnection的基础上多了一种选择，AFNetworking基于NSURLSession也实现了相应的网络请求API。从功能模块划分，网络可用性，数据的序列化和反序列化以及安全策略这几部分都是一样的，主要是网络请求的管理，请求和返回的处理比前者更加简单，应该说NSURLSession从系统层面实现了NSURLConnection没有实现的部分，比如管理多个请求，直接面向应用层提供上传下载的接口，所以AFNetworking基于NSRULSession实现的网络层更简单，但是功能上没有NSURLConnection那么丰富，比如监听所有任务中完成任务的进度，还有和UIKit的集成。</p>
+<h2 id="AFURLSessionManager"><a href="#AFURLSessionManager" class="headerlink" title="AFURLSessionManager"></a>AFURLSessionManager</h2><pre><code>组成：
+
+            session NSURLSession 支持多个以task (网络请求)的管理，是网络层的核心。有 NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSessionDataDelegate, NSURLSessionDownloadDelegate 多个代理接口。
+
+            operationQueue 用于初始化NSURLSession的队列，网络请求返回的回调会在该队列中的线程执行。类比使用NSURLConnection的时候，也有一个OperationQueue，功能基本一样，虽然NSURLConnection自己就是异步线程去发起网络请求，但是如果不使用NSOpeartion和OperationQueue，网络回调都将正在主线程中执行，会影响UI操作的流畅性。在NSURLConnection的实现部分，是通过全局的网络线程去执行回调的。这是NSURLConnection和NSURLSession不太一致的地方，后者是系统层就处理了，比NSURLConnection方便不少。
+
+             responseSerializer 用于返回数据的反序列化的对象
+
+             tasks NSURLSession管理的所有网络请求包含重复的，分为一般的api请求,上传请求和下载请求。
+
+             dataTasks 一般的api请求
+
+             uploadTasks 上传请求
+
+             downloadTasks 下载请求
+
+             completionQueue 用户端的回调所在的队列
+
+             completionGroup 用户端回调队列所在的组
+
+             AFURLSessionManagerTaskDelegagate  在AFURLSessionManager内部用于存储task相关数据的业务对象，详细内容下面会单独介绍。
+
+             mutableTaskDelegatesKeyedByTaskIdentifier 可变字典，用于存储task和对应delegate之间的关联。
+
+             剩下的就是在网络请求过程中各种状态的回调block对象了。
+</code></pre><h2 id="AFURLSessionManagerTaskDelegate"><a href="#AFURLSessionManagerTaskDelegate" class="headerlink" title="AFURLSessionManagerTaskDelegate"></a>AFURLSessionManagerTaskDelegate</h2><pre><code>在网络请求的各种回调过程中，它用来存储和记录与单个task相关的信息，在网络请求完成之后，将数据返回给用户端。
+
+组成：
+
+             AFURLSessionManager  在AFURLSessionManagerTaskDelegate对象中记录的session对象，一个session对象对应这多个task对象，每个task都有一个与之对应的AFURLSessionManagerTaskDelegate对象。  每一个task在session层面都共享了一些数据，比如序列化对象，回调的队列和组，当一个task完成的时候，都需要从共享的session中获取这些数据来完成业务层的回调逻辑。
+
+             mutableData 存储了当前请求获得的返回的数据信息，最后会反序列化成对象或者是以文件的形式保存下来。
+
+             progress 记录了下载或者上传文件的进度，可以随时通过uploadProgressForTask来获取某个task完成情况，该方法参数为当前task。
+
+             AFURLSessionTaskCompletionHandler 由用户端设置的，task请求完成之后的用户端回调block
+
+             AFURLSessionDownloadTaskDidFinishDownloadingBlock 由用户端设置的，task下载文件完成之后生成目标文件的保存路径的block
+
+             downloadFileURL 由上一个block生成的目标文件保存路径，在下载完成的回调中设置，然后在整个请求完成的回调中以通知的形式返回给用户端
+</code></pre><h2 id="AFURLSessionManager_u4E0EAFURLSessionManagerTaskDelegate_u7684_u5173_u7CFB"><a href="#AFURLSessionManager_u4E0EAFURLSessionManagerTaskDelegate_u7684_u5173_u7CFB" class="headerlink" title="AFURLSessionManager与AFURLSessionManagerTaskDelegate的关系"></a>AFURLSessionManager与AFURLSessionManagerTaskDelegate的关系</h2><pre><code>在AFURLSessionManager中实现了大部分NSURLSession的协议，而AFURLSessionManagerTaskDelegate也实现了几个重要的协议，比如数据获取，整个task请求完成，文件下载和上传的进度。不同之处在于AFURLSessionManager是针对所有请求的，而taskDelegate只是针对某次具体的请求的。taskDelegate并没有直接从系统层获得回调，而是所有的回调都会先经过AFURLSessionManager处理，然后再分发给每个具体的taskDelegate，由每个taskDelegate自己存储并记录与当前请求相关的数据和信息。至于AFURLSessionManagerTaskDelegate中会有类似以下的回调的实现逻辑：
+</code></pre><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (void)URLSession:(__unused NSURLSession *)session&#10; &#10;              task:(__unused NSURLSessionTask *)task&#10; &#10;   didSendBodyData:(__unused int64_t)bytesSent&#10; &#10;    totalBytesSent:(int64_t)totalBytesSent&#10; &#10;totalBytesExpectedToSend:(int64_t)totalBytesExpectedToSend&#10; &#10;&#123;&#10; &#10;    self.progress.totalUnitCount = totalBytesExpectedToSend;&#10; &#10;    self.progress.completedUnitCount = totalBytesSent;&#10; &#10;&#125;</span><br></pre></td></tr></table></figure>
+<p> task的delegate在这里只获取有用的数据，保存了上传的进度，这样做的目的就是为了保持代码一致性。阅读起来更容理解，相当于代理方法的分发。</p>
+<p>sessionManager里通过字典存下了所有的task，而又在具体的session回调中去处理每个task相关的逻辑。</p>
+<h2 id="AFHTTPSessionManager"><a href="#AFHTTPSessionManager" class="headerlink" title="AFHTTPSessionManager"></a>AFHTTPSessionManager</h2><pre><code>它集成自AFURLSessionManager，主要功能增加了一些初始化的方法以及对序列化和反序列化阶段的错误检查，还有设置具体的序列化对象。只是在AFURLSessionManager的基础上做了更容易使用的接口的封装。
+</code></pre><h2 id="NSURLSession_u548CNSURLConnection"><a href="#NSURLSession_u548CNSURLConnection" class="headerlink" title="NSURLSession和NSURLConnection"></a>NSURLSession和NSURLConnection</h2><pre><code>AFNetworking中NSRULSession的实现上的设计上基本是一致的，AFURLSessionManager相当于AFHTTPRequestOperationManager。而AFURLConnectionOperation类似与NSURLSessionTask。但是对网络回调的实现上是不一致的，前者是依赖NSURLSession处理，然后分发给每个task自己处理。而NSURLConnection是每个请求都是独立处理各自来自系统层的网络回调，这是由于采用了不同的系统网络框架造成的。两种实现都有一个问题，就是如果baseURL是经常变化的，下载某一个素材的时候，这个时候比较好的办法是只使用NSRULConnection中的AFURLConnectionPeration，每次url由自己指定，自己去维护OperationQueue，可能需要自己实现AFHTTPRequestOperationManager的部分。
 </code></pre>
           
         
@@ -1330,8 +1330,8 @@ error，用于保存请求中发生的任务错误信息。
             
               
                 
-                <a class="post-title-link" href="/2016/01/25/AFNetworking源码解析1/" itemprop="url">
-                  AFNetworking源码解析1
+                <a class="post-title-link" href="/2016/01/25/Autolayout和Frame/" itemprop="url">
+                  Autolayout和Frame
                 </a>
               
             
@@ -1350,13 +1350,32 @@ error，用于保存请求中发生的任务错误信息。
           </span>
 
           
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分類於</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/郑智文/" itemprop="url" rel="index">
+                    <span itemprop="name">郑智文</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
 
           
             
               <span class="post-comments-count">
                 &nbsp; | &nbsp;
-                <a href="/2016/01/25/AFNetworking源码解析1/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/01/25/AFNetworking源码解析1/" itemprop="commentsCount"></span>
+                <a href="/2016/01/25/Autolayout和Frame/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/01/25/Autolayout和Frame/" itemprop="commentsCount"></span>
                 </a>
               </span>
             
@@ -1380,12 +1399,36 @@ error，用于保存请求中发生的任务错误信息。
 
       
         
-          <h2 id="u57FA_u672C_u5185_u5BB9"><a href="#u57FA_u672C_u5185_u5BB9" class="headerlink" title="基本内容"></a>基本内容</h2><p>本节主要介绍iOS中多线程相关的内容，先简单介绍NSOperation的使用，然后结合GCD实现任务之间的管理，比如每个任务完成之后的处理以及任务与任务之间的依赖，所有任务完成之后的处理等，通过AFNetworking源码分析其具体实现。</p>
-          <div class="post-more-link text-center">
-            <a class="btn" href="/2016/01/25/AFNetworking源码解析1/#more" rel="contents">
-              閱讀全文 &raquo;
-            </a>
-          </div>
+          
+            <p> 现在iOS页面布局用的最多的就是Frame和Autolayout，在Autolayout通过Masonry封装在实际使用中也十分方便。实际上，Autolayout的约束最后都是系统最终转化成frame来进行布局的，对与一个View来说，最终确定其中心点位置和View的宽高。当Autolayout和Frame设置上产生冲突的时候，则会以Autolayout的设置为准。这篇主要讨论布局中常用的几个方法和autolayout遇到动画的情形。</p>
+<h2 id="u8DDF_u5E03_u5C40_u76F8_u5173_u7684_u65B9_u6CD5"><a href="#u8DDF_u5E03_u5C40_u76F8_u5173_u7684_u65B9_u6CD5" class="headerlink" title="跟布局相关的方法"></a>跟布局相关的方法</h2><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (void)setNeedsLayout;&#10;- (void)layoutIfNeeded;&#10;- (void)layoutSubviews;</span><br></pre></td></tr></table></figure>
+<p>setNeedsLayout方法标记当前view是需要重新布局的，在下一次runloop中，进行重新布局。如果说想在当前runloop中立刻更新布局，则通过调用layoutIfNeeded方法可以实现，此时系统会调用layoutSubviews。在layoutSubviews方法中，可以自己定义新的view或者改变子view的布局。</p>
+<h2 id="Autolayout_u76F8_u5173_u7684_u65B9_u6CD5"><a href="#Autolayout_u76F8_u5173_u7684_u65B9_u6CD5" class="headerlink" title="Autolayout相关的方法"></a>Autolayout相关的方法</h2><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">//view&#30340;&#26041;&#27861;&#10;- (void)updateConstraintsIfNeeded;&#10;//&#37325;&#20889;view&#20013;&#30340;&#26041;&#27861;&#10;- (void)updateConstraints&#10;- (BOOL)needsUpdateConstraints&#10;- (void)setNeedsUpdateConstraints&#10;  &#10;//&#37325;&#20889;viewController&#20013;&#30340;&#26041;&#27861;&#10;- (void)updateViewConstraints</span><br></pre></td></tr></table></figure>
+<p>setNeedsUpdateConstraints只是标记当前view的约束需要在下一次runloop中更新，updateConstraintsIfNeeded如果过满足更新条件会立刻调用updateConstraints来更新约束，updateConstraints是子view需要重写的方法，来更新View的约束，最后需要调用[super updateConstraints]，否则会崩。而updateViewConstraints是定义在viewController中的，方便去更新viewController对应view的约束。</p>
+<p>具体可以通过调用view的setNeedsUpdateConstraints来最终调用到viewController的updateViewConstraints方法来，如果没有这个方法，那么每次都要定义一个子view去重写updateConstraints方法会比较繁琐。updateConstraints和updateViewConstrains方法可以把约束的代码和和业务逻辑分开，另外性能也更好。</p>
+<h2 id="u4E3A_u4EC0_u4E48_u4F1A_u6709setxxxxx_u548CxxxifNeeded_u65B9_u6CD5"><a href="#u4E3A_u4EC0_u4E48_u4F1A_u6709setxxxxx_u548CxxxifNeeded_u65B9_u6CD5" class="headerlink" title="为什么会有setxxxxx和xxxifNeeded方法"></a>为什么会有setxxxxx和xxxifNeeded方法</h2><p>setxxxxx方法可能是为了性能，没有在代码更新布局或者约束之后立刻执行，而是在下一次runloop中执行。</p>
+<p>xxxxIfNeeded方法则是为了在必要的时候，立刻更新约束或者布局，举个例子，有些时候同时使用动画和autolayout。</p>
+<h2 id="Autolayout_u548C_u52A8_u753B"><a href="#Autolayout_u548C_u52A8_u753B" class="headerlink" title="Autolayout和动画"></a>Autolayout和动画</h2><p>现在实现一个view滑动的动画：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">@interface MyView : UIView&#10; &#10;-(void)layoutSubviews;&#10;@end&#10;@implementation MyView&#10; &#10;-(void)layoutSubviews&#10;&#123;&#10;    [super layoutSubviews];&#10;&#125;&#10;@end</span><br></pre></td></tr></table></figure>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (void)viewDidLoad &#123;&#10; &#10;    [super viewDidLoad];&#10; &#10;   &#10;    _container = [[MyView alloc] initWithFrame:self.view.frame];&#10; &#10;    [self.view addSubview:_container];&#10; &#10;     &#10;    _redView = [[MyView alloc] initWithFrame:CGRectMake(100, 100, 100, 50)];&#10; &#10;    _redView.backgroundColor = [UIColor redColor];&#10; &#10;    [_container addSubview:_redView];&#10; &#10;    [_redView mas_makeConstraints:^(MASConstraintMaker *make) &#123;&#10; &#10;        make.centerX.equalTo(self.view);&#10; &#10;        make.centerY.equalTo(self.view);&#10; &#10;        make.width.height.equalTo(@100);&#10; &#10;    &#125;];&#10; &#10;     &#10; &#10;    UIButton *btn = [UIButton buttonWithType:UIButtonTypeSystem];&#10; &#10;    btn.titleLabel.text = @&#34;&#28857;&#20987;&#21160;&#30011;&#34;;&#10; &#10;    btn.backgroundColor = [UIColor greenColor];&#10; &#10;    [_container addSubview:btn];&#10; &#10;    [btn mas_makeConstraints:^(MASConstraintMaker *make) &#123;&#10; &#10;        make.centerX.equalTo(self.view);&#10; &#10;        make.centerY.equalTo(self.view).offset(100);&#10; &#10;        make.width.equalTo(@100);&#10; &#10;        make.height.equalTo(@50);&#10; &#10;    &#125;];&#10; &#10;    [btn addTarget:self action:@selector(onButtonClick:) forControlEvents:UIControlEventTouchUpInside];&#10; &#10;&#125;</span><br></pre></td></tr></table></figure>
+<p>使用frame</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (void)onButtonClick:(id)sender&#10; &#10;&#123;&#10;    [UIView animateWithDuration:1 animations:^&#123;&#10; &#10;        self.redView.frame = CGRectMake(0, self.redView.frame.origin.y, self.redView.frame.size.width, self.redView.frame.size.height);&#10; &#10;    &#125;];&#10;&#125;</span><br></pre></td></tr></table></figure>
+<p>和预期结果一致，红色的view滑动到屏幕的最左侧。</p>
+<p>使用autolayout</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (void)onButtonClick:(id)sender&#10; &#10;&#123;&#10;    [UIView animateWithDuration:1 animations:^&#123;&#10;    [self.redView mas_remakeConstraints:^(MASConstraintMaker *make) &#123;&#10; &#10;        make.width.height.equalTo(@100);&#10; &#10;        make.left.centerY.equalTo(self.view);&#10; &#10;    &#125;];&#10;&#125;</span><br></pre></td></tr></table></figure>
+<p>和预期的结果不一致，红色的view突然一下移动到屏幕的最左侧，上面这种做法是有问题的，现在在动画的block中添加一行日志的代码。</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (void)onButtonClick:(id)sender&#10;&#123;&#10;    [UIView animateWithDuration:1 animations:^&#123;&#10;        [self.redView mas_remakeConstraints:^(MASConstraintMaker *make) &#123;&#10;            make.width.height.equalTo(@100);&#10;            make.left.centerY.equalTo(self.view);&#10;        &#125;];&#10;        NSLog(@&#34;redView x = %@&#34;, @(self.redView.frame.origin.x));&#10;    &#125;];&#10;&#125;</span><br></pre></td></tr></table></figure>
+<p>输出日志：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">2016-09-07 17:44:03.069 2323[99216:10267632] redView x = 137.5(&#21407;&#26469;&#30340;&#20301;&#32622;)</span><br></pre></td></tr></table></figure>
+<p>说明在重新更新红色View的约束之后，系统并没有立刻转化成对应的frame值，还是原来的位置，但是为什么view会移动到屏幕最右侧而不是静止呢。</p>
+<p>因为系统在计算动画插值的过程中，发现红色view的前后的位置是一样的，最后的结果就是在原地静止，猜测有可能系统为了优化直接取消了动画。这是在当前runloop发生的逻辑，在下一次runloop过程中，上一次给红色view设置的约束就生效了，系统会将约束更新到frame的表现上，所以红色view直接跑到了屏幕最左侧。</p>
+<p>现在的问题是需要在系统计算动画插值的时候，将视图的frame即时的更新，所以调用红色view的layoutIfNeeded方法就好了。</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (void)onButtonClick:(id)sender&#10;&#123;&#10;    [UIView animateWithDuration:1 animations:^&#123;&#10;        [self.redView mas_remakeConstraints:^(MASConstraintMaker *make) &#123;&#10; &#10;            make.width.height.equalTo(@100);&#10; &#10;            make.left.centerY.equalTo(self.view);&#10; &#10;        &#125;];&#10; &#10;        NSLog(@&#34;redView x = %@&#34;, @(self.redView.frame.origin.x));&#10; &#10;        [self.container layoutIfNeeded];&#10; &#10;        NSLog(@&#34;redView x = %@&#34;, @(self.redView.frame.origin.x));&#10; &#10;    &#125;];&#10;&#125;</span><br></pre></td></tr></table></figure>
+<p>日志输出为:</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">2016-09-07 17:50:33.297 2323[99250:10270639] redView x = 137.5&#10; &#10;2016-09-07 17:50:33.299 2323[99250:10270639] redView x = 0</span><br></pre></td></tr></table></figure>
+<p>通过对比可以看到，在调用parentView的layoutIfNeeded之后，其frame得到更新了，所以最后动画如预期一样出现了。这里必须是调用parentView的layoutIfNeeded方法，调用红色视图的layoutIfNeeded方法是不会更新它自己的frame的。</p>
+
+          
         
       
     </div>
@@ -1415,6 +1458,10 @@ error，用于保存请求中发生的任务错误信息。
   </section>
 
   
+  <nav class="pagination">
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
+  </nav>
+
 
 
           </div>
@@ -1453,17 +1500,24 @@ error，用于保存请求中发生的任务错误信息。
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">10</span>
+              <span class="site-state-item-count">19</span>
               <span class="site-state-item-name">文章</span>
             </a>
           </div>
 
           
+            <div class="site-state-item site-state-categories">
+              
+                <span class="site-state-item-count">1</span>
+                <span class="site-state-item-name">分類</span>
+              
+            </div>
+          
 
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">4</span>
+                <span class="site-state-item-count">5</span>
                 <span class="site-state-item-name">標籤</span>
               </a>
             </div>

@@ -1,0 +1,644 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="iOS," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.2" />
+
+
+
+
+
+
+<meta name="description" content="现在iOS页面布局用的最多的就是Frame和Autolayout，在Autolayout通过Masonry封装在实际使用中也十分方便。实际上，Autolayout的约束最后都是系统最终转化成frame来进行布局的，对与一个View来说，最终确定其中心点位置和View的宽高。当Autolayout和Frame设置上产生冲突的时候，则会以Autolayout的设置为准。这篇主要讨论布局中常用的几个方法">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Autolayout和Frame">
+<meta property="og:url" content="http://yoursite.com/2016/01/25/Autolayout和Frame/index.html">
+<meta property="og:site_name" content="郑智文">
+<meta property="og:description" content="现在iOS页面布局用的最多的就是Frame和Autolayout，在Autolayout通过Masonry封装在实际使用中也十分方便。实际上，Autolayout的约束最后都是系统最终转化成frame来进行布局的，对与一个View来说，最终确定其中心点位置和View的宽高。当Autolayout和Frame设置上产生冲突的时候，则会以Autolayout的设置为准。这篇主要讨论布局中常用的几个方法">
+<meta property="og:updated_time" content="2016-12-07T17:50:59.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Autolayout和Frame">
+<meta name="twitter:description" content="现在iOS页面布局用的最多的就是Frame和Autolayout，在Autolayout通过Masonry封装在实际使用中也十分方便。实际上，Autolayout的约束最后都是系统最终转化成frame来进行布局的，对与一个View来说，最终确定其中心点位置和View的宽高。当Autolayout和Frame设置上产生冲突的时候，则会以Autolayout的设置为准。这篇主要讨论布局中常用的几个方法">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2016/01/25/Autolayout和Frame/"/>
+
+
+  <title> Autolayout和Frame | 郑智文 </title>
+</head>
+
+<body itemscope itemtype="//schema.org/WebPage" lang="zh-CN">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="//schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">郑智文</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">iOS dev</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首頁
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            歸檔
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            標籤
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="//schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Autolayout和Frame
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">發表於</span>
+            <time itemprop="dateCreated" datetime="2016-01-25T16:38:24+08:00" content="2016-01-25">
+              2016-01-25
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分類於</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/郑智文/" itemprop="url" rel="index">
+                    <span itemprop="name">郑智文</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/01/25/Autolayout和Frame/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/01/25/Autolayout和Frame/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p> 现在iOS页面布局用的最多的就是Frame和Autolayout，在Autolayout通过Masonry封装在实际使用中也十分方便。实际上，Autolayout的约束最后都是系统最终转化成frame来进行布局的，对与一个View来说，最终确定其中心点位置和View的宽高。当Autolayout和Frame设置上产生冲突的时候，则会以Autolayout的设置为准。这篇主要讨论布局中常用的几个方法和autolayout遇到动画的情形。</p>
+<h2 id="u8DDF_u5E03_u5C40_u76F8_u5173_u7684_u65B9_u6CD5"><a href="#u8DDF_u5E03_u5C40_u76F8_u5173_u7684_u65B9_u6CD5" class="headerlink" title="跟布局相关的方法"></a>跟布局相关的方法</h2><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (void)setNeedsLayout;&#10;- (void)layoutIfNeeded;&#10;- (void)layoutSubviews;</span><br></pre></td></tr></table></figure>
+<p>setNeedsLayout方法标记当前view是需要重新布局的，在下一次runloop中，进行重新布局。如果说想在当前runloop中立刻更新布局，则通过调用layoutIfNeeded方法可以实现，此时系统会调用layoutSubviews。在layoutSubviews方法中，可以自己定义新的view或者改变子view的布局。</p>
+<h2 id="Autolayout_u76F8_u5173_u7684_u65B9_u6CD5"><a href="#Autolayout_u76F8_u5173_u7684_u65B9_u6CD5" class="headerlink" title="Autolayout相关的方法"></a>Autolayout相关的方法</h2><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">//view&#30340;&#26041;&#27861;&#10;- (void)updateConstraintsIfNeeded;&#10;//&#37325;&#20889;view&#20013;&#30340;&#26041;&#27861;&#10;- (void)updateConstraints&#10;- (BOOL)needsUpdateConstraints&#10;- (void)setNeedsUpdateConstraints&#10;  &#10;//&#37325;&#20889;viewController&#20013;&#30340;&#26041;&#27861;&#10;- (void)updateViewConstraints</span><br></pre></td></tr></table></figure>
+<p>setNeedsUpdateConstraints只是标记当前view的约束需要在下一次runloop中更新，updateConstraintsIfNeeded如果过满足更新条件会立刻调用updateConstraints来更新约束，updateConstraints是子view需要重写的方法，来更新View的约束，最后需要调用[super updateConstraints]，否则会崩。而updateViewConstraints是定义在viewController中的，方便去更新viewController对应view的约束。</p>
+<p>具体可以通过调用view的setNeedsUpdateConstraints来最终调用到viewController的updateViewConstraints方法来，如果没有这个方法，那么每次都要定义一个子view去重写updateConstraints方法会比较繁琐。updateConstraints和updateViewConstrains方法可以把约束的代码和和业务逻辑分开，另外性能也更好。</p>
+<h2 id="u4E3A_u4EC0_u4E48_u4F1A_u6709setxxxxx_u548CxxxifNeeded_u65B9_u6CD5"><a href="#u4E3A_u4EC0_u4E48_u4F1A_u6709setxxxxx_u548CxxxifNeeded_u65B9_u6CD5" class="headerlink" title="为什么会有setxxxxx和xxxifNeeded方法"></a>为什么会有setxxxxx和xxxifNeeded方法</h2><p>setxxxxx方法可能是为了性能，没有在代码更新布局或者约束之后立刻执行，而是在下一次runloop中执行。</p>
+<p>xxxxIfNeeded方法则是为了在必要的时候，立刻更新约束或者布局，举个例子，有些时候同时使用动画和autolayout。</p>
+<h2 id="Autolayout_u548C_u52A8_u753B"><a href="#Autolayout_u548C_u52A8_u753B" class="headerlink" title="Autolayout和动画"></a>Autolayout和动画</h2><p>现在实现一个view滑动的动画：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">@interface MyView : UIView&#10; &#10;-(void)layoutSubviews;&#10;@end&#10;@implementation MyView&#10; &#10;-(void)layoutSubviews&#10;&#123;&#10;    [super layoutSubviews];&#10;&#125;&#10;@end</span><br></pre></td></tr></table></figure>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (void)viewDidLoad &#123;&#10; &#10;    [super viewDidLoad];&#10; &#10;   &#10;    _container = [[MyView alloc] initWithFrame:self.view.frame];&#10; &#10;    [self.view addSubview:_container];&#10; &#10;     &#10;    _redView = [[MyView alloc] initWithFrame:CGRectMake(100, 100, 100, 50)];&#10; &#10;    _redView.backgroundColor = [UIColor redColor];&#10; &#10;    [_container addSubview:_redView];&#10; &#10;    [_redView mas_makeConstraints:^(MASConstraintMaker *make) &#123;&#10; &#10;        make.centerX.equalTo(self.view);&#10; &#10;        make.centerY.equalTo(self.view);&#10; &#10;        make.width.height.equalTo(@100);&#10; &#10;    &#125;];&#10; &#10;     &#10; &#10;    UIButton *btn = [UIButton buttonWithType:UIButtonTypeSystem];&#10; &#10;    btn.titleLabel.text = @&#34;&#28857;&#20987;&#21160;&#30011;&#34;;&#10; &#10;    btn.backgroundColor = [UIColor greenColor];&#10; &#10;    [_container addSubview:btn];&#10; &#10;    [btn mas_makeConstraints:^(MASConstraintMaker *make) &#123;&#10; &#10;        make.centerX.equalTo(self.view);&#10; &#10;        make.centerY.equalTo(self.view).offset(100);&#10; &#10;        make.width.equalTo(@100);&#10; &#10;        make.height.equalTo(@50);&#10; &#10;    &#125;];&#10; &#10;    [btn addTarget:self action:@selector(onButtonClick:) forControlEvents:UIControlEventTouchUpInside];&#10; &#10;&#125;</span><br></pre></td></tr></table></figure>
+<p>使用frame</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (void)onButtonClick:(id)sender&#10; &#10;&#123;&#10;    [UIView animateWithDuration:1 animations:^&#123;&#10; &#10;        self.redView.frame = CGRectMake(0, self.redView.frame.origin.y, self.redView.frame.size.width, self.redView.frame.size.height);&#10; &#10;    &#125;];&#10;&#125;</span><br></pre></td></tr></table></figure>
+<p>和预期结果一致，红色的view滑动到屏幕的最左侧。</p>
+<p>使用autolayout</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (void)onButtonClick:(id)sender&#10; &#10;&#123;&#10;    [UIView animateWithDuration:1 animations:^&#123;&#10;    [self.redView mas_remakeConstraints:^(MASConstraintMaker *make) &#123;&#10; &#10;        make.width.height.equalTo(@100);&#10; &#10;        make.left.centerY.equalTo(self.view);&#10; &#10;    &#125;];&#10;&#125;</span><br></pre></td></tr></table></figure>
+<p>和预期的结果不一致，红色的view突然一下移动到屏幕的最左侧，上面这种做法是有问题的，现在在动画的block中添加一行日志的代码。</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (void)onButtonClick:(id)sender&#10;&#123;&#10;    [UIView animateWithDuration:1 animations:^&#123;&#10;        [self.redView mas_remakeConstraints:^(MASConstraintMaker *make) &#123;&#10;            make.width.height.equalTo(@100);&#10;            make.left.centerY.equalTo(self.view);&#10;        &#125;];&#10;        NSLog(@&#34;redView x = %@&#34;, @(self.redView.frame.origin.x));&#10;    &#125;];&#10;&#125;</span><br></pre></td></tr></table></figure>
+<p>输出日志：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">2016-09-07 17:44:03.069 2323[99216:10267632] redView x = 137.5(&#21407;&#26469;&#30340;&#20301;&#32622;)</span><br></pre></td></tr></table></figure>
+<p>说明在重新更新红色View的约束之后，系统并没有立刻转化成对应的frame值，还是原来的位置，但是为什么view会移动到屏幕最右侧而不是静止呢。</p>
+<p>因为系统在计算动画插值的过程中，发现红色view的前后的位置是一样的，最后的结果就是在原地静止，猜测有可能系统为了优化直接取消了动画。这是在当前runloop发生的逻辑，在下一次runloop过程中，上一次给红色view设置的约束就生效了，系统会将约束更新到frame的表现上，所以红色view直接跑到了屏幕最左侧。</p>
+<p>现在的问题是需要在系统计算动画插值的时候，将视图的frame即时的更新，所以调用红色view的layoutIfNeeded方法就好了。</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (void)onButtonClick:(id)sender&#10;&#123;&#10;    [UIView animateWithDuration:1 animations:^&#123;&#10;        [self.redView mas_remakeConstraints:^(MASConstraintMaker *make) &#123;&#10; &#10;            make.width.height.equalTo(@100);&#10; &#10;            make.left.centerY.equalTo(self.view);&#10; &#10;        &#125;];&#10; &#10;        NSLog(@&#34;redView x = %@&#34;, @(self.redView.frame.origin.x));&#10; &#10;        [self.container layoutIfNeeded];&#10; &#10;        NSLog(@&#34;redView x = %@&#34;, @(self.redView.frame.origin.x));&#10; &#10;    &#125;];&#10;&#125;</span><br></pre></td></tr></table></figure>
+<p>日志输出为:</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">2016-09-07 17:50:33.297 2323[99250:10270639] redView x = 137.5&#10; &#10;2016-09-07 17:50:33.299 2323[99250:10270639] redView x = 0</span><br></pre></td></tr></table></figure>
+<p>通过对比可以看到，在调用parentView的layoutIfNeeded之后，其frame得到更新了，所以最后动画如预期一样出现了。这里必须是调用parentView的layoutIfNeeded方法，调用红色视图的layoutIfNeeded方法是不会更新它自己的frame的。</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/iOS/" rel="tag">#iOS</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/01/25/AFNetworking源码解析1/" rel="next" title="AFNetworking源码解析1">
+                <i class="fa fa-chevron-left"></i> AFNetworking源码解析1
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/01/25/Runloop和多线程/" rel="prev" title="Runloop和多线程">
+                Runloop和多线程 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/01/25/Autolayout和Frame/"
+           data-title="Autolayout和Frame" data-url="http://yoursite.com/2016/01/25/Autolayout和Frame/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目錄
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            本站概覽
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="//schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.gif"
+               alt="郑智文" />
+          <p class="site-author-name" itemprop="name">郑智文</p>
+          <p class="site-description motion-element" itemprop="description">车到山前必有路</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">19</span>
+              <span class="site-state-item-name">文章</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              
+                <span class="site-state-item-count">1</span>
+                <span class="site-state-item-name">分類</span>
+              
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">標籤</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#u8DDF_u5E03_u5C40_u76F8_u5173_u7684_u65B9_u6CD5"><span class="nav-number">1.</span> <span class="nav-text">跟布局相关的方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Autolayout_u76F8_u5173_u7684_u65B9_u6CD5"><span class="nav-number">2.</span> <span class="nav-text">Autolayout相关的方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#u4E3A_u4EC0_u4E48_u4F1A_u6709setxxxxx_u548CxxxifNeeded_u65B9_u6CD5"><span class="nav-number">3.</span> <span class="nav-text">为什么会有setxxxxx和xxxifNeeded方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Autolayout_u548C_u52A8_u753B"><span class="nav-number">4.</span> <span class="nav-text">Autolayout和动画</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2016</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">郑智文</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 強力驅動
+</div>
+
+<div class="theme-info">
+  主題 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.2"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"zhengzhiwen"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    <script src="/vendors/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

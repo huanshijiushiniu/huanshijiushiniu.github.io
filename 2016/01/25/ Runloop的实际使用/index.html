@@ -1,0 +1,655 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="iOS," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.2" />
+
+
+
+
+
+
+<meta name="description" content="Runloop 和 线程在CFRunloop中已经说明了一个线程及其runloop的对应关系 ，现在以iOS中NSThread的实际使用来说明runloop在线程中的意义。
+在iOS中直接使用NSThread有一下几种方式，但是归根到底，当一个线程需要长时间的去跟踪一个任务的时候，这几种方式做的事情是一样的，只不过接口名称和参数不一样，感觉是为了使用起来更加方便。因为这些接口内部都需要依赖runl">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Runloop的实际使用">
+<meta property="og:url" content="http://yoursite.com/2016/01/25/ Runloop的实际使用/index.html">
+<meta property="og:site_name" content="郑智文">
+<meta property="og:description" content="Runloop 和 线程在CFRunloop中已经说明了一个线程及其runloop的对应关系 ，现在以iOS中NSThread的实际使用来说明runloop在线程中的意义。
+在iOS中直接使用NSThread有一下几种方式，但是归根到底，当一个线程需要长时间的去跟踪一个任务的时候，这几种方式做的事情是一样的，只不过接口名称和参数不一样，感觉是为了使用起来更加方便。因为这些接口内部都需要依赖runl">
+<meta property="og:image" content="http://7xqgnx.com1.z0.glb.clouddn.com/Runloop1.png">
+<meta property="og:updated_time" content="2016-12-07T17:14:30.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Runloop的实际使用">
+<meta name="twitter:description" content="Runloop 和 线程在CFRunloop中已经说明了一个线程及其runloop的对应关系 ，现在以iOS中NSThread的实际使用来说明runloop在线程中的意义。
+在iOS中直接使用NSThread有一下几种方式，但是归根到底，当一个线程需要长时间的去跟踪一个任务的时候，这几种方式做的事情是一样的，只不过接口名称和参数不一样，感觉是为了使用起来更加方便。因为这些接口内部都需要依赖runl">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    }
+  };
+</script>
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2016/01/25/ Runloop的实际使用/"/>
+
+
+  <title> Runloop的实际使用 | 郑智文 </title>
+</head>
+
+<body itemscope itemtype="//schema.org/WebPage" lang="zh-CN">
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="//schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">郑智文</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">iOS dev</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首頁
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            歸檔
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            標籤
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="//schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Runloop的实际使用
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">發表於</span>
+            <time itemprop="dateCreated" datetime="2016-01-25T16:38:24+08:00" content="2016-01-25">
+              2016-01-25
+            </time>
+          </span>
+
+          
+            <span class="post-category" >
+              &nbsp; | &nbsp;
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分類於</span>
+              
+                <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                  <a href="/categories/郑智文/" itemprop="url" rel="index">
+                    <span itemprop="name">郑智文</span>
+                  </a>
+                </span>
+
+                
+                
+
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                &nbsp; | &nbsp;
+                <a href="/2016/01/25/ Runloop的实际使用/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/01/25/ Runloop的实际使用/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="Runloop__u548C__u7EBF_u7A0B"><a href="#Runloop__u548C__u7EBF_u7A0B" class="headerlink" title="Runloop 和 线程"></a>Runloop 和 线程</h2><p>在<a href="http://wiki.sankuai.com/display/~zhengzhiwen/2015/10/27/CFRunloop" target="_blank" rel="external">CFRunloop</a>中已经说明了一个线程及其runloop的对应关系 ，现在以iOS中NSThread的实际使用来说明runloop在线程中的意义。</p>
+<p>在iOS中直接使用NSThread有一下几种方式，但是归根到底，当一个线程需要长时间的去跟踪一个任务的时候，这几种方式做的事情是一样的，只不过接口名称和参数不一样，感觉是为了使用起来更加方便。因为这些接口内部都需要依赖runloop去实现事件的监听，这个可以通过调用堆栈证实。</p>
+<p><strong>- (void)performSelectorInBackground:(SEL)aSelector withObject:(id)arg</strong></p>
+<p><strong>- (void)performSelector:(SEL)aSelector onThread:(NSThread *)thr withObject:(id)arg waitUntilDone:(BOOL)wait</strong></p>
+<p>以上两个方法都是NSObject的方法，可以直接通过一个对象来创建一个线程。第二个方法具有更多的灵活性，它可以让你自己指定线程，第一个方法是自己默认创建一个线程。第二个方法的最后一个参数是指定是否等待aSelector执行完毕。</p>
+<p><strong>+ (void)detachNewThreadSelector:(SEL)selector toTarget:(id)target withObject:(id)argument;</strong></p>
+<p>该方法是NSThread的类方法，跟第一个方法是类似的功能。</p>
+<p>下面通过在子线程发起一个网络请求，去发现一些问题，然后通过runloop去解释原因，并推测API背后的实现方式。</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (void)viewDidLoad &#123;&#10; &#10;    [super viewDidLoad];&#10; &#10;    [self performSelectorInBackground:@selector(multiThread) withObject:nil];&#10;&#125;&#10;- (void)multiThread&#10; &#10;&#123;&#10;    if (![NSThread isMainThread]) &#123;&#10;        self.request = [[NSMutableURLRequest alloc]&#10; &#10;                                        initWithURL:[NSURL URLWithString:@&#34;http://www.baidu.com&#34;]&#10; &#10;                                        cachePolicy:NSURLCacheStorageNotAllowed&#10; &#10;                                        timeoutInterval:10];&#10; &#10;        [self.request setHTTPMethod: @&#34;GET&#34;];&#10; &#10;        self.connection =[[NSURLConnection alloc] initWithRequest:self.request&#10; &#10;                                                         delegate:self&#10; &#10;                                                 startImmediately:YES];&#10;    &#125;&#10;&#125;&#10;- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response&#123;&#10; &#10;    NSLog(@&#34;network callback&#34;);&#10; &#10;&#125;</span><br></pre></td></tr></table></figure>
+<p>运行之后，可以发现在子线程中发起的网络请求，回调没有被调用。根据<a href="http://wiki.sankuai.com/display/~zhengzhiwen/2015/10/27/CFRunloop" target="_blank" rel="external">CFRunloop</a>介绍的知识可以大致猜测可能跟runloop有关系，也就是子线程的runloop中没有注册网络回调的消息，所以该子线程自己相关的runloop没有收到回调。实际上     - (instancetype)initWithRequest:(NSURLRequest *)request delegate:(id)delegate startImmediately:(BOOL) 这个方法的第三个参数的bool值表示是否在创建完NSURLConnection对象之后立刻发起请求，一般情况下是YES，什么时候会传NO呢。</p>
+<p>事实上，对于以上这种方式创建的线程，默认是没有生成该线程对应的runloop的。也就是说这种情况下，需要自己去创建对应线程的runloop，并且让他run起来，去不断监听各种往runloop里注册的消息。但是对于主线程而言，其对应的runloop会由系统建立，并且自己run起来。由于平时工作在主线程下，这些工作大部分情况下不需要人为参与，所以一到子线程就会有各种问题。子线程中起timer没有生效也是相同的原因。所以以上函数第三个参数的意思就是，如果是当前线程已经runloop跑起来的情况下，传YES。除此之外，需要自己创建runloop去run，再将网络请求消息注册到runloop中。</p>
+<p>现在根据以上分析修改代码：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">self.request = [[NSMutableURLRequest alloc]&#10; &#10;                                initWithURL:[NSURL URLWithString:@&#34;http://www.baidu.com&#34;]&#10; &#10;                                cachePolicy:NSURLCacheStorageNotAllowed&#10; &#10;                                timeoutInterval:10];&#10; &#10;[self.request setHTTPMethod: @&#34;GET&#34;];&#10; &#10;self.connection =[[NSURLConnection alloc] initWithRequest:self.request&#10; &#10;                                                 delegate:self&#10; &#10;                                         startImmediately:NO];&#10; &#10;NSRunLoop *runLoop = [NSRunLoop currentRunLoop];&#10; &#10;[runLoop run];&#10; &#10;[self.connection scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];&#10; &#10;[self.connection start];</span><br></pre></td></tr></table></figure>
+<p>运行之后发现回调仍然没有被调用，其实在这里卡了很久。后来一次偶然的调试中发现，代码运行到 [runLoop run]; 就没有然后了。后面的代码一直就没有被执行，现在修改代码如下：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">self.request = [[NSMutableURLRequest alloc]&#10; &#10;                                initWithURL:[NSURL URLWithString:@&#34;http://www.baidu.com&#34;]&#10; &#10;                                cachePolicy:NSURLCacheStorageNotAllowed&#10; &#10;                                timeoutInterval:10];&#10; &#10;[self.request setHTTPMethod: @&#34;GET&#34;];&#10; &#10;self.connection =[[NSURLConnection alloc] initWithRequest:self.request&#10; &#10;                                                 delegate:self&#10; &#10;                                         startImmediately:NO];&#10; &#10;NSRunLoop *runLoop = [NSRunLoop currentRunLoop];&#10; &#10;[self.connection scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];&#10; &#10;[self.connection start];&#10; &#10;[runLoop run];</span><br></pre></td></tr></table></figure>
+<p>然后就发现网络回调被调用了。</p>
+<p>之后分析了一下调用堆栈：</p>
+<p>第一个：在multiThread里面是这样的：</p>
+<p><img src="http://7xqgnx.com1.z0.glb.clouddn.com/Runloop1.png" alt="multiThread.png"></p>
+<p>第二个：网络回调里面是这样的：</p>
+<p><a href="http://7xqgnx.com1.z0.glb.clouddn.com/Runloop2.png" target="_blank" rel="external">http://7xqgnx.com1.z0.glb.clouddn.com/Runloop2.png</a></p>
+<p>通过堆栈可以得知，这两个函数都是由线程6调用的，也就是创建的子线程，但是堆栈中的内容很不一样。很显然第二个是从runloop 调出的，并且是Sources0这个消息调出的。而第一个是线程运行时候的初始化方法。所以当调用runloop run的时候，其实是线程进入自己的runloop去监听时间了，从此以后，所有的代码都会从runloop CALLOUT出来。所以这种情况下，需要把先把消息注册到runloop中，让runloop跑起来是最后需要做的事情。</p>
+<p>以下是开源库AFNetworking网络请求的实现：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (void)start &#123;&#10; &#10;    [self.lock lock];&#10; &#10;    if ([self isCancelled]) &#123;&#10;        [self performSelector:@selector(cancelConnection) onThread:[[self class] networkRequestThread] withObject:nil waitUntilDone:NO modes:[self.runLoopModes allObjects]];&#10; &#10;    &#125; else if ([self isReady]) &#123;&#10;        self.state = AFOperationExecutingState;&#10;        [self performSelector:@selector(operationDidStart) onThread:[[self class] networkRequestThread] withObject:nil waitUntilDone:NO modes:[self.runLoopModes allObjects]];&#10; &#10;    &#125;&#10;    [self.lock unlock];&#10;&#125;&#10;+ (void)networkRequestThreadEntryPoint:(id)__unused object &#123;&#10; &#10;    @autoreleasepool &#123;&#10;        [[NSThread currentThread] setName:@&#34;AFNetworking&#34;];&#10;        NSRunLoop *runLoop = [NSRunLoop currentRunLoop];&#10;        [runLoop addPort:[NSMachPort port] forMode:NSDefaultRunLoopMode];&#10;        [runLoop run];&#10;    &#125;&#10;&#125;&#10; &#10;+ (NSThread *)networkRequestThread &#123;&#10; &#10;    static NSThread *_networkRequestThread = nil;&#10;    static dispatch_once_t oncePredicate;&#10; &#10;    dispatch_once(&#38;oncePredicate, ^&#123;&#10;        _networkRequestThread = [[NSThread alloc] initWithTarget:self selector:@selector(networkRequestThreadEntryPoint:) object:nil];&#10;        [_networkRequestThread start];&#10;    &#125;);&#10;    return _networkRequestThread;&#10;&#125;</span><br></pre></td></tr></table></figure>
+<p>AFNetworking使用的是<strong>- (void)performSelector:(SEL)aSelector onThread:(NSThread *)thr withObject:(id)arg waitUntilDone:(BOOL)wait</strong>这个方法，但是为什么它没有使用<strong>- (void)performSelectorInBackground:(SEL)aSelector withObject:(id)arg</strong>这个方法呢？</p>
+<p>通过断点，发现了AFNetwokring网络请求中一些函数的调用顺序：</p>
+<p>1.networkRequestThread</p>
+<p>2.networkRequestThreadEntryPoint</p>
+<p>3.operationDidStart</p>
+<p>为什么operationDidStart会在networkRequestThreadEntryPoint之后调用？</p>
+<p>在networkRequestThreadEntryPoint里主要是生成网络线程的runloop并且让它跑起来，里面的  [runLoop addPort:[NSMachPort port] forMode:NSDefaultRunLoopMode];这主要是为了在没有任何网络请求的时候让网络线程保持监听状态，否则网络线程的loop会直接返回，之后再调用网络线程请求就没有意义了。再结合调用堆栈，发现operationDidStart是在runloop callout出来的，而networkRequestThreadEntryPoint是网络线程的入口方法。这跟之前的例子是一样的。所以，我猜测<strong>- (void)performSelector:(SEL)aSelector onThread:(NSThread *)thr withObject:(id)arg waitUntilDone:(BOOL)wait</strong></p>
+<p>这个方法背后是由主线程将aSelector作为消息注册到runloop中时间发生在networkRequestThreadEntryPoint方法调用之前，所以在networkRequestThreadEntryPoint方法中调用,NSRunLoop currentRunLoop的时候其实runloop本身应该已经被创建了。原因是因为在这个地方断点 ，打印runloop对象可以发现里面已经注册了source0的消息，如下截图：</p>
+<p><a href="http://7xqgnx.com1.z0.glb.clouddn.com/Runloop3.png" target="_blank" rel="external">http://7xqgnx.com1.z0.glb.clouddn.com/Runloop3.png</a></p>
+<p>也就是说父线程在- (void)performSelector:(SEL)aSelector onThread:(NSThread *)thr withObject:(id)arg waitUntilDone:(BOOL)wait 函数中将aSelector注册成source0，这是该函数背后的大致实现。通过查阅apple官方文档，基本属实，如下所示：</p>
+<p><a href="http://7xqgnx.com1.z0.glb.clouddn.com/Runloop4.png" target="_blank" rel="external">http://7xqgnx.com1.z0.glb.clouddn.com/Runloop4.png</a></p>
+<p>通过上面的分析，可以得出使用<strong>performSelector</strong>方法可以将子线程runloop的初始化实现在子线程的初始化方法里实现，如果使用<strong>performSelectorInBackground</strong></p>
+<p>方法，那么子线程runloop的初始化和业务逻辑就会混到一起，并且每一次都会重新初始化。AFNetworking通过一个静态全局的子线程去管理所有的网络请求，其对应的runloop也只需要初始化一次。</p>
+<p>通过以上分析，可以知道如果需要让一个子线程去持续的监听时间，就需要启动它的runloop并且忘其中注册source，timer，oberserver三者之一的消息类型。在默认情况下子线程的runloop是不会自己创建和启动的。</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/iOS/" rel="tag">#iOS</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/01/25/KVC集合操作符/" rel="prev" title="KVC集合操作符">
+                KVC集合操作符 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/01/25/ Runloop的实际使用/"
+           data-title="Runloop的实际使用" data-url="http://yoursite.com/2016/01/25/ Runloop的实际使用/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目錄
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            本站概覽
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="//schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.gif"
+               alt="郑智文" />
+          <p class="site-author-name" itemprop="name">郑智文</p>
+          <p class="site-description motion-element" itemprop="description">车到山前必有路</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">19</span>
+              <span class="site-state-item-name">文章</span>
+            </a>
+          </div>
+
+          
+            <div class="site-state-item site-state-categories">
+              
+                <span class="site-state-item-count">1</span>
+                <span class="site-state-item-name">分類</span>
+              
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">標籤</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Runloop__u548C__u7EBF_u7A0B"><span class="nav-number">1.</span> <span class="nav-text">Runloop 和 线程</span></a></li></ol></div>
+            
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2016</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">郑智文</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 強力驅動
+</div>
+
+<div class="theme-info">
+  主題 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.0.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.0.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.2"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"zhengzhiwen"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    <script src="/vendors/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
