@@ -68,7 +68,7 @@
 <link href="/css/main.css?v=5.0.2" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="iOS," />
+  <meta name="keywords" content="源码分析," />
 
 
 
@@ -90,7 +90,7 @@
 <meta property="og:url" content="http://yoursite.com/2016/01/25/MLLeaksFinder源码分析/index.html">
 <meta property="og:site_name" content="郑智文">
 <meta property="og:description" content="基本原理：MlLeaksFinder是app运行的过程中，检测内存泄漏的第三方库，可以帮助在代码调试阶段发现问题。通过method swizzled hook 对象生命周期的方法，在对象结束生命周期的时候，在指定时间之后给对象发送某个消息。如果这个时候对象已经被释放，消息不会被执行，如果没有释放说明发生了内存泄漏，消息就会被执行，从而提醒开发人员。通过递归的方式，会记录下某个视图或者control">
-<meta property="og:updated_time" content="2016-12-07T17:49:56.000Z">
+<meta property="og:updated_time" content="2016-12-07T18:00:40.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="MLLeaksFinder源码分析">
 <meta name="twitter:description" content="基本原理：MlLeaksFinder是app运行的过程中，检测内存泄漏的第三方库，可以帮助在代码调试阶段发现问题。通过method swizzled hook 对象生命周期的方法，在对象结束生命周期的时候，在指定时间之后给对象发送某个消息。如果这个时候对象已经被释放，消息不会被执行，如果没有释放说明发生了内存泄漏，消息就会被执行，从而提醒开发人员。通过递归的方式，会记录下某个视图或者control">
@@ -305,6 +305,7 @@
       
         <h2 id="u57FA_u672C_u539F_u7406_uFF1A"><a href="#u57FA_u672C_u539F_u7406_uFF1A" class="headerlink" title="基本原理："></a>基本原理：</h2><p>MlLeaksFinder是app运行的过程中，检测内存泄漏的第三方库，可以帮助在代码调试阶段发现问题。通过method swizzled hook 对象生命周期的方法，在对象结束生命周期的时候，在指定时间之后给对象发送某个消息。如果这个时候对象已经被释放，消息不会被执行，如果没有释放说明发生了内存泄漏，消息就会被执行，从而提醒开发人员。通过递归的方式，会记录下某个视图或者controller的树形节点的位置，能更好的帮助定位到具体哪个对象没有被释放。MLLeaksFinder引入了FBRetainCycleDetector，可以检查循环引用。</p>
 <p>内存泄漏分为2种，第1种是对象没有被任何引用，在内存中没有被释放。第2种是对象发生循环引用，无法被释放。在RAC的场景下，通过是2引起的内存泄漏。</p>
+<a id="more"></a> 
 <h2 id="u6E90_u7801_u5206_u6790_uFF1A"><a href="#u6E90_u7801_u5206_u6790_uFF1A" class="headerlink" title="源码分析："></a>源码分析：</h2><p>MLeaksFinder.h定义了MLeaksFinder中使用的宏</p>
 <p><strong>MLeaksFinder.h</strong></p>
 <figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">#ifdef MEMORY_LEAKS_FINDER_ENABLED&#10; &#10; &#10;//_INTERNAL_MLF_ENABLED &#23439;&#29992;&#26469;&#25511;&#21046; MLLeaksFinder&#24211; &#20160;&#20040;&#26102;&#20505;&#24320;&#21551;&#26816;&#27979;&#65292;&#21487;&#20197;&#33258;&#23450;&#20041;&#36825;&#20010;&#26102;&#26426;&#65292;&#40664;&#35748;&#21017;&#26159;&#22312;DEBUG&#27169;&#24335;&#19979;&#20250;&#21551;&#21160;&#65292;RELEASE&#27169;&#24335;&#19979;&#19981;&#21551;&#21160;&#10;//&#23427;&#26159;&#36890;&#36807;&#39044;&#32534;&#35793;&#26469;&#23454;&#29616;&#30340;&#10;#define _INTERNAL_MLF_ENABLED MEMORY_LEAKS_FINDER_ENABLED&#10; &#10;#else&#10; &#10;#define _INTERNAL_MLF_ENABLED DEBUG&#10; &#10;#endif&#10; &#10;//_INTERNAL_MLF_RC_ENABLED &#23439;&#29992;&#26469;&#25511;&#21046; &#26159;&#21542;&#24320;&#21551;&#24490;&#29615;&#24341;&#29992;&#30340;&#26816;&#27979;&#10;#ifdef MEMORY_LEAKS_FINDER_RETAIN_CYCLE_ENABLED&#10; &#10;#define _INTERNAL_MLF_RC_ENABLED MEMORY_LEAKS_FINDER_RETAIN_CYCLE_ENABLED&#10; &#10; &#10;//COCOAPODS &#22240;&#20026;MLLeaksFinder&#24341;&#29992;&#20102;&#31532;&#19977;&#24211;&#29992;&#26469;&#26816;&#26597;&#24490;&#29615;&#24341;&#29992;&#65292;&#25152;&#20197;&#24517;&#39035;&#26159;&#24403;&#21069;&#39033;&#30446;&#20013;&#20351;&#29992;&#20102;COCOAPODS&#65292;&#25165;&#33021;&#20351;&#29992;&#36825;&#20010;&#21151;&#33021;&#12290;&#10;#elif COCOAPODS&#10; &#10;#define _INTERNAL_MLF_RC_ENABLED COCOAPODS&#10; &#10;#endif</span><br></pre></td></tr></table></figure>
@@ -341,7 +342,7 @@
       
         <div class="post-tags">
           
-            <a href="/tags/iOS/" rel="tag">#iOS</a>
+            <a href="/tags/源码分析/" rel="tag">#源码分析</a>
           
         </div>
       
@@ -449,7 +450,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-count">6</span>
                 <span class="site-state-item-name">標籤</span>
               </a>
             </div>

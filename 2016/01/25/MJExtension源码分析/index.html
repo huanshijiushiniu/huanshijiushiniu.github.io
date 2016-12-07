@@ -68,7 +68,7 @@
 <link href="/css/main.css?v=5.0.2" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="iOS," />
+  <meta name="keywords" content="源码分析," />
 
 
 
@@ -102,7 +102,7 @@
 2)通过runtime在运行时给对象增加字段信息，比如记录哪些属性进行转化，哪些属性忽略转化。
 
 3)通过runtime给对应的类增">
-<meta property="og:updated_time" content="2016-12-07T17:52:03.000Z">
+<meta property="og:updated_time" content="2016-12-07T18:00:02.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="MJExtension源码分析">
 <meta name="twitter:description" content="总结1.KVC，字典转化成对象的时候，需要给对象的属性赋值。MJExtentsion是通过KVC实现的，所以对象都需要继承NSObject。
@@ -334,6 +334,7 @@
 <p>5.instanceType</p>
 <figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">+ (instancetype)objectWithKeyValues:(id)keyValues</span><br></pre></td></tr></table></figure>
 <p>该方法定义在NSObject中，但在不同的子业务类型中，通过instanceType会返回具体的类型对象。</p>
+<a id="more"></a> 
 <h2 id="u9700_u8981_u6CE8_u610F_u7684_u5730_u65B9"><a href="#u9700_u8981_u6CE8_u610F_u7684_u5730_u65B9" class="headerlink" title="需要注意的地方"></a>需要注意的地方</h2><p>1.字典转对象的时候，如果某个属性是NULL，会被过滤，也就是该对象的这个属性的值是默认值。整型是0,对象类型是nil。</p>
 <p>2.在对象转字典的时候，如果对象本身的属性包含了superClass,debugDescription,description,hash这四种中的一种，会被MJExtension过滤掉。因为它认为是系统自动增加的元素，所以当前情况下，需要把这些属性手动增加上去。</p>
 <p>3.在对象转字典的时候，如果对象某个字段为nil，生成的结果字典里就不会存在这个键值对。</p>
@@ -378,7 +379,7 @@
       
         <div class="post-tags">
           
-            <a href="/tags/iOS/" rel="tag">#iOS</a>
+            <a href="/tags/源码分析/" rel="tag">#源码分析</a>
           
         </div>
       
@@ -486,7 +487,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-count">6</span>
                 <span class="site-state-item-name">標籤</span>
               </a>
             </div>

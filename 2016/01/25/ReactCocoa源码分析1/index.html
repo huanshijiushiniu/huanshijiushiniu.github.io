@@ -68,7 +68,7 @@
 <link href="/css/main.css?v=5.0.2" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="iOS," />
+  <meta name="keywords" content="源码分析," />
 
 
 
@@ -92,7 +92,7 @@
 <meta property="og:site_name" content="郑智文">
 <meta property="og:description" content="问题1在看代码的时候，发现代码中使用到了
 1- (void)viewDidload&amp;#10;&amp;#123;&amp;#10;    [super viewDidload];&amp;#10;    [self bindData];&amp;#10;&amp;#125;&amp;#10;  &amp;#10;- (void)bindData&amp;#10;&amp;#123;&amp;#10;    [[RACObserve(self, propertyA) ignor">
-<meta property="og:updated_time" content="2016-12-07T17:55:26.000Z">
+<meta property="og:updated_time" content="2016-12-07T18:01:03.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="ReactCocoa源码分析1">
 <meta name="twitter:description" content="问题1在看代码的时候，发现代码中使用到了
@@ -310,6 +310,7 @@
 <figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (void)viewDidload&#10;&#123;&#10;    [super viewDidload];&#10;    [self bindData];&#10;&#125;&#10;  &#10;- (void)bindData&#10;&#123;&#10;    [[RACObserve(self, propertyA) ignore:nil] subscribeNext:^(NSArray *dataA) &#123;&#10;        NSLog(@&#34;use dataA&#34;);&#10;    &#125;];&#10;&#125;</span><br></pre></td></tr></table></figure>
 <p>但是在这个类的propertyA是在init之后去设置的，在viewDidload之前。也就是在使用RAC订阅属性变化信号之前，但是use dataA打印出来了。猜测RACObserve宏生成信号在调用subscribeNext中，直接就调用了dataA的block的逻辑。但是感觉比较奇怪，不应该是propertyA变化的时候才会调用dataA的block的逻辑吗。</p>
 <p>现在具体看一下，一个信号的创建和订阅的源码：</p>
+<a id="more"></a> 
 <h3 id="u4FE1_u53F7_u521B_u5EFA_uFF1A"><a href="#u4FE1_u53F7_u521B_u5EFA_uFF1A" class="headerlink" title="信号创建："></a>信号创建：</h3><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">+ (RACSignal *)createSignal:(RACDisposable * (^)(id&#60;RACSubscriber&#62; subscriber))didSubscribe &#123;&#10; &#10;    return [RACDynamicSignal createSignal:didSubscribe];&#10; &#10;&#125;&#10;+ (RACSignal *)createSignal:(RACDisposable * (^)(id&#60;RACSubscriber&#62; subscriber))didSubscribe &#123;&#10; &#10;    RACDynamicSignal *signal = [[self alloc] init];&#10; &#10;    signal-&#62;_didSubscribe = [didSubscribe copy];&#10; &#10;    return [signal setNameWithFormat:@&#34;+createSignal:&#34;];&#10;&#125;</span><br></pre></td></tr></table></figure>
 <p>在创建一个信号的时候，会传进来一个叫didSubscribe的block，该信号会把它存下来。</p>
 <h3 id="u4FE1_u53F7_u8BA2_u9605"><a href="#u4FE1_u53F7_u8BA2_u9605" class="headerlink" title="信号订阅"></a>信号订阅</h3><p>RACSignal的subscribeNext方法:</p>
@@ -383,7 +384,7 @@
       
         <div class="post-tags">
           
-            <a href="/tags/iOS/" rel="tag">#iOS</a>
+            <a href="/tags/源码分析/" rel="tag">#源码分析</a>
           
         </div>
       
@@ -491,7 +492,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-count">6</span>
                 <span class="site-state-item-name">標籤</span>
               </a>
             </div>

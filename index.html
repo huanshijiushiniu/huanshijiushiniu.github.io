@@ -1399,36 +1399,12 @@ error，用于保存请求中发生的任务错误信息。
 
       
         
-          
-            <p> 现在iOS页面布局用的最多的就是Frame和Autolayout，在Autolayout通过Masonry封装在实际使用中也十分方便。实际上，Autolayout的约束最后都是系统最终转化成frame来进行布局的，对与一个View来说，最终确定其中心点位置和View的宽高。当Autolayout和Frame设置上产生冲突的时候，则会以Autolayout的设置为准。这篇主要讨论布局中常用的几个方法和autolayout遇到动画的情形。</p>
-<h2 id="u8DDF_u5E03_u5C40_u76F8_u5173_u7684_u65B9_u6CD5"><a href="#u8DDF_u5E03_u5C40_u76F8_u5173_u7684_u65B9_u6CD5" class="headerlink" title="跟布局相关的方法"></a>跟布局相关的方法</h2><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (void)setNeedsLayout;&#10;- (void)layoutIfNeeded;&#10;- (void)layoutSubviews;</span><br></pre></td></tr></table></figure>
-<p>setNeedsLayout方法标记当前view是需要重新布局的，在下一次runloop中，进行重新布局。如果说想在当前runloop中立刻更新布局，则通过调用layoutIfNeeded方法可以实现，此时系统会调用layoutSubviews。在layoutSubviews方法中，可以自己定义新的view或者改变子view的布局。</p>
-<h2 id="Autolayout_u76F8_u5173_u7684_u65B9_u6CD5"><a href="#Autolayout_u76F8_u5173_u7684_u65B9_u6CD5" class="headerlink" title="Autolayout相关的方法"></a>Autolayout相关的方法</h2><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">//view&#30340;&#26041;&#27861;&#10;- (void)updateConstraintsIfNeeded;&#10;//&#37325;&#20889;view&#20013;&#30340;&#26041;&#27861;&#10;- (void)updateConstraints&#10;- (BOOL)needsUpdateConstraints&#10;- (void)setNeedsUpdateConstraints&#10;  &#10;//&#37325;&#20889;viewController&#20013;&#30340;&#26041;&#27861;&#10;- (void)updateViewConstraints</span><br></pre></td></tr></table></figure>
-<p>setNeedsUpdateConstraints只是标记当前view的约束需要在下一次runloop中更新，updateConstraintsIfNeeded如果过满足更新条件会立刻调用updateConstraints来更新约束，updateConstraints是子view需要重写的方法，来更新View的约束，最后需要调用[super updateConstraints]，否则会崩。而updateViewConstraints是定义在viewController中的，方便去更新viewController对应view的约束。</p>
-<p>具体可以通过调用view的setNeedsUpdateConstraints来最终调用到viewController的updateViewConstraints方法来，如果没有这个方法，那么每次都要定义一个子view去重写updateConstraints方法会比较繁琐。updateConstraints和updateViewConstrains方法可以把约束的代码和和业务逻辑分开，另外性能也更好。</p>
-<h2 id="u4E3A_u4EC0_u4E48_u4F1A_u6709setxxxxx_u548CxxxifNeeded_u65B9_u6CD5"><a href="#u4E3A_u4EC0_u4E48_u4F1A_u6709setxxxxx_u548CxxxifNeeded_u65B9_u6CD5" class="headerlink" title="为什么会有setxxxxx和xxxifNeeded方法"></a>为什么会有setxxxxx和xxxifNeeded方法</h2><p>setxxxxx方法可能是为了性能，没有在代码更新布局或者约束之后立刻执行，而是在下一次runloop中执行。</p>
-<p>xxxxIfNeeded方法则是为了在必要的时候，立刻更新约束或者布局，举个例子，有些时候同时使用动画和autolayout。</p>
-<h2 id="Autolayout_u548C_u52A8_u753B"><a href="#Autolayout_u548C_u52A8_u753B" class="headerlink" title="Autolayout和动画"></a>Autolayout和动画</h2><p>现在实现一个view滑动的动画：</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">@interface MyView : UIView&#10; &#10;-(void)layoutSubviews;&#10;@end&#10;@implementation MyView&#10; &#10;-(void)layoutSubviews&#10;&#123;&#10;    [super layoutSubviews];&#10;&#125;&#10;@end</span><br></pre></td></tr></table></figure>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (void)viewDidLoad &#123;&#10; &#10;    [super viewDidLoad];&#10; &#10;   &#10;    _container = [[MyView alloc] initWithFrame:self.view.frame];&#10; &#10;    [self.view addSubview:_container];&#10; &#10;     &#10;    _redView = [[MyView alloc] initWithFrame:CGRectMake(100, 100, 100, 50)];&#10; &#10;    _redView.backgroundColor = [UIColor redColor];&#10; &#10;    [_container addSubview:_redView];&#10; &#10;    [_redView mas_makeConstraints:^(MASConstraintMaker *make) &#123;&#10; &#10;        make.centerX.equalTo(self.view);&#10; &#10;        make.centerY.equalTo(self.view);&#10; &#10;        make.width.height.equalTo(@100);&#10; &#10;    &#125;];&#10; &#10;     &#10; &#10;    UIButton *btn = [UIButton buttonWithType:UIButtonTypeSystem];&#10; &#10;    btn.titleLabel.text = @&#34;&#28857;&#20987;&#21160;&#30011;&#34;;&#10; &#10;    btn.backgroundColor = [UIColor greenColor];&#10; &#10;    [_container addSubview:btn];&#10; &#10;    [btn mas_makeConstraints:^(MASConstraintMaker *make) &#123;&#10; &#10;        make.centerX.equalTo(self.view);&#10; &#10;        make.centerY.equalTo(self.view).offset(100);&#10; &#10;        make.width.equalTo(@100);&#10; &#10;        make.height.equalTo(@50);&#10; &#10;    &#125;];&#10; &#10;    [btn addTarget:self action:@selector(onButtonClick:) forControlEvents:UIControlEventTouchUpInside];&#10; &#10;&#125;</span><br></pre></td></tr></table></figure>
-<p>使用frame</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (void)onButtonClick:(id)sender&#10; &#10;&#123;&#10;    [UIView animateWithDuration:1 animations:^&#123;&#10; &#10;        self.redView.frame = CGRectMake(0, self.redView.frame.origin.y, self.redView.frame.size.width, self.redView.frame.size.height);&#10; &#10;    &#125;];&#10;&#125;</span><br></pre></td></tr></table></figure>
-<p>和预期结果一致，红色的view滑动到屏幕的最左侧。</p>
-<p>使用autolayout</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (void)onButtonClick:(id)sender&#10; &#10;&#123;&#10;    [UIView animateWithDuration:1 animations:^&#123;&#10;    [self.redView mas_remakeConstraints:^(MASConstraintMaker *make) &#123;&#10; &#10;        make.width.height.equalTo(@100);&#10; &#10;        make.left.centerY.equalTo(self.view);&#10; &#10;    &#125;];&#10;&#125;</span><br></pre></td></tr></table></figure>
-<p>和预期的结果不一致，红色的view突然一下移动到屏幕的最左侧，上面这种做法是有问题的，现在在动画的block中添加一行日志的代码。</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (void)onButtonClick:(id)sender&#10;&#123;&#10;    [UIView animateWithDuration:1 animations:^&#123;&#10;        [self.redView mas_remakeConstraints:^(MASConstraintMaker *make) &#123;&#10;            make.width.height.equalTo(@100);&#10;            make.left.centerY.equalTo(self.view);&#10;        &#125;];&#10;        NSLog(@&#34;redView x = %@&#34;, @(self.redView.frame.origin.x));&#10;    &#125;];&#10;&#125;</span><br></pre></td></tr></table></figure>
-<p>输出日志：</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">2016-09-07 17:44:03.069 2323[99216:10267632] redView x = 137.5(&#21407;&#26469;&#30340;&#20301;&#32622;)</span><br></pre></td></tr></table></figure>
-<p>说明在重新更新红色View的约束之后，系统并没有立刻转化成对应的frame值，还是原来的位置，但是为什么view会移动到屏幕最右侧而不是静止呢。</p>
-<p>因为系统在计算动画插值的过程中，发现红色view的前后的位置是一样的，最后的结果就是在原地静止，猜测有可能系统为了优化直接取消了动画。这是在当前runloop发生的逻辑，在下一次runloop过程中，上一次给红色view设置的约束就生效了，系统会将约束更新到frame的表现上，所以红色view直接跑到了屏幕最左侧。</p>
-<p>现在的问题是需要在系统计算动画插值的时候，将视图的frame即时的更新，所以调用红色view的layoutIfNeeded方法就好了。</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (void)onButtonClick:(id)sender&#10;&#123;&#10;    [UIView animateWithDuration:1 animations:^&#123;&#10;        [self.redView mas_remakeConstraints:^(MASConstraintMaker *make) &#123;&#10; &#10;            make.width.height.equalTo(@100);&#10; &#10;            make.left.centerY.equalTo(self.view);&#10; &#10;        &#125;];&#10; &#10;        NSLog(@&#34;redView x = %@&#34;, @(self.redView.frame.origin.x));&#10; &#10;        [self.container layoutIfNeeded];&#10; &#10;        NSLog(@&#34;redView x = %@&#34;, @(self.redView.frame.origin.x));&#10; &#10;    &#125;];&#10;&#125;</span><br></pre></td></tr></table></figure>
-<p>日志输出为:</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">2016-09-07 17:50:33.297 2323[99250:10270639] redView x = 137.5&#10; &#10;2016-09-07 17:50:33.299 2323[99250:10270639] redView x = 0</span><br></pre></td></tr></table></figure>
-<p>通过对比可以看到，在调用parentView的layoutIfNeeded之后，其frame得到更新了，所以最后动画如预期一样出现了。这里必须是调用parentView的layoutIfNeeded方法，调用红色视图的layoutIfNeeded方法是不会更新它自己的frame的。</p>
-
-          
+          <p> 现在iOS页面布局用的最多的就是Frame和Autolayout，在Autolayout通过Masonry封装在实际使用中也十分方便。实际上，Autolayout的约束最后都是系统最终转化成frame来进行布局的，对与一个View来说，最终确定其中心点位置和View的宽高。当Autolayout和Frame设置上产生冲突的时候，则会以Autolayout的设置为准。这篇主要讨论布局中常用的几个方法和autolayout遇到动画的情形。</p>
+          <div class="post-more-link text-center">
+            <a class="btn" href="/2016/01/25/Autolayout和Frame/#more" rel="contents">
+              閱讀全文 &raquo;
+            </a>
+          </div>
         
       
     </div>
@@ -1517,7 +1493,7 @@ error，用于保存请求中发生的任务错误信息。
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-count">6</span>
                 <span class="site-state-item-name">標籤</span>
               </a>
             </div>

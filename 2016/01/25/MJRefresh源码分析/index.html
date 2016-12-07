@@ -68,7 +68,7 @@
 <link href="/css/main.css?v=5.0.2" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="iOS," />
+  <meta name="keywords" content="源码分析," />
 
 
 
@@ -92,7 +92,7 @@
 <meta property="og:site_name" content="郑智文">
 <meta property="og:description" content="基本原理：通过header view和 foot view 添加对scrollview contentOffset属性 kvo 实现动态刷新。在runtime对scrollview添加header的时候，在view的willMoveToSuperView生命周期方法中进行注册。
 需要记忆理解的地方：1.scrollview往上滑动的时候，contentOffsize的y是正数。scrollview">
-<meta property="og:updated_time" content="2016-12-07T17:53:27.000Z">
+<meta property="og:updated_time" content="2016-12-07T18:00:18.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="MJRefresh源码分析">
 <meta name="twitter:description" content="基本原理：通过header view和 foot view 添加对scrollview contentOffset属性 kvo 实现动态刷新。在runtime对scrollview添加header的时候，在view的willMoveToSuperView生命周期方法中进行注册。
@@ -312,6 +312,7 @@
 <p>3.通过设置header或者footer的状态的时候控制其行为</p>
 <p>小技巧：</p>
 <p>1.在子类中调用了父类的方法，如果要求子类在其实现中必须调用父类的方法，可以在方法声明的时候添加 NS_REQUIRES_SUPER 宏，编译器在编译过程可进行检查。</p>
+<a id="more"></a> 
 <h2 id="u4EE3_u7801_uFF1A"><a href="#u4EE3_u7801_uFF1A" class="headerlink" title="代码："></a>代码：</h2><p>1.MJRefreshNormalHeader</p>
 <p>在初始化的时候,会调用init方法，在Init方法里，系统默认调用了initWithFrame方法，frame传的CGRectZero.在MJRefreshNormalHeader的父类</p>
 <figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (instancetype)initWithFrame:(CGRect)frame&#10;&#123;&#10;    if (self = [super initWithFrame:frame]) &#123;&#10; &#10;        // &#20934;&#22791;&#24037;&#20316;&#10; &#10;        [self prepare];&#10; &#10;        // &#40664;&#35748;&#26159;&#26222;&#36890;&#29366;&#24577;&#10; &#10;        self.state = MJRefreshStateIdle;&#10;    &#125;&#10;    return self;&#10;&#125;</span><br></pre></td></tr></table></figure>
@@ -356,7 +357,7 @@
       
         <div class="post-tags">
           
-            <a href="/tags/iOS/" rel="tag">#iOS</a>
+            <a href="/tags/源码分析/" rel="tag">#源码分析</a>
           
         </div>
       
@@ -464,7 +465,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-count">6</span>
                 <span class="site-state-item-name">標籤</span>
               </a>
             </div>

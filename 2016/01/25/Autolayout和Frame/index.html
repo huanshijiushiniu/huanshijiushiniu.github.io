@@ -90,7 +90,7 @@
 <meta property="og:url" content="http://yoursite.com/2016/01/25/Autolayout和Frame/index.html">
 <meta property="og:site_name" content="郑智文">
 <meta property="og:description" content="现在iOS页面布局用的最多的就是Frame和Autolayout，在Autolayout通过Masonry封装在实际使用中也十分方便。实际上，Autolayout的约束最后都是系统最终转化成frame来进行布局的，对与一个View来说，最终确定其中心点位置和View的宽高。当Autolayout和Frame设置上产生冲突的时候，则会以Autolayout的设置为准。这篇主要讨论布局中常用的几个方法">
-<meta property="og:updated_time" content="2016-12-07T17:50:59.000Z">
+<meta property="og:updated_time" content="2016-12-07T17:59:19.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Autolayout和Frame">
 <meta name="twitter:description" content="现在iOS页面布局用的最多的就是Frame和Autolayout，在Autolayout通过Masonry封装在实际使用中也十分方便。实际上，Autolayout的约束最后都是系统最终转化成frame来进行布局的，对与一个View来说，最终确定其中心点位置和View的宽高。当Autolayout和Frame设置上产生冲突的时候，则会以Autolayout的设置为准。这篇主要讨论布局中常用的几个方法">
@@ -304,6 +304,7 @@
 
       
         <p> 现在iOS页面布局用的最多的就是Frame和Autolayout，在Autolayout通过Masonry封装在实际使用中也十分方便。实际上，Autolayout的约束最后都是系统最终转化成frame来进行布局的，对与一个View来说，最终确定其中心点位置和View的宽高。当Autolayout和Frame设置上产生冲突的时候，则会以Autolayout的设置为准。这篇主要讨论布局中常用的几个方法和autolayout遇到动画的情形。</p>
+<a id="more"></a> 
 <h2 id="u8DDF_u5E03_u5C40_u76F8_u5173_u7684_u65B9_u6CD5"><a href="#u8DDF_u5E03_u5C40_u76F8_u5173_u7684_u65B9_u6CD5" class="headerlink" title="跟布局相关的方法"></a>跟布局相关的方法</h2><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (void)setNeedsLayout;&#10;- (void)layoutIfNeeded;&#10;- (void)layoutSubviews;</span><br></pre></td></tr></table></figure>
 <p>setNeedsLayout方法标记当前view是需要重新布局的，在下一次runloop中，进行重新布局。如果说想在当前runloop中立刻更新布局，则通过调用layoutIfNeeded方法可以实现，此时系统会调用layoutSubviews。在layoutSubviews方法中，可以自己定义新的view或者改变子view的布局。</p>
 <h2 id="Autolayout_u76F8_u5173_u7684_u65B9_u6CD5"><a href="#Autolayout_u76F8_u5173_u7684_u65B9_u6CD5" class="headerlink" title="Autolayout相关的方法"></a>Autolayout相关的方法</h2><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">//view&#30340;&#26041;&#27861;&#10;- (void)updateConstraintsIfNeeded;&#10;//&#37325;&#20889;view&#20013;&#30340;&#26041;&#27861;&#10;- (void)updateConstraints&#10;- (BOOL)needsUpdateConstraints&#10;- (void)setNeedsUpdateConstraints&#10;  &#10;//&#37325;&#20889;viewController&#20013;&#30340;&#26041;&#27861;&#10;- (void)updateViewConstraints</span><br></pre></td></tr></table></figure>
@@ -460,7 +461,7 @@
           
             <div class="site-state-item site-state-tags">
               <a href="/tags">
-                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-count">6</span>
                 <span class="site-state-item-name">標籤</span>
               </a>
             </div>
