@@ -1,0 +1,78 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content="博客"><title>AFNetworking-NSURLConnection | 一只独来独往的水鸟</title><link rel="stylesheet" type="text/css" href="/css/style.css?v=0.0.0"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/normalize/6.0.0/normalize.min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/0.6.2/pure-min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/0.6.2/grids-responsive-min.css"><link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css"><script type="text/javascript" src="//cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script><link rel="Shortcut Icon" type="image/x-icon" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">AFNetworking-NSURLConnection</h1><a id="logo" href="/.">一只独来独往的水鸟</a><p class="description">iOS</p></div><div id="nav-menu"><a href="/." class="current"><i class="fa fa-home"> 首页</i></a><a href="/archives/"><i class="fa fa-archive"> 归档</i></a></div></div><div id="layout" class="pure-g"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">AFNetworking-NSURLConnection</h1><div class="post-meta">Oct 13, 2016<span> | </span><span class="category"><a href="/categories/Tech/">Tech</a></span><script src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js" async></script><span id="busuanzi_container_page_pv"> | <span id="busuanzi_value_page_pv"></span><span> 阅读</span></span></div><div class="post-content"><p>###AFURLConnectionOperation</p>
+<p>AFURLConnectionOperation继承自NSOpeartion，并且实现了NSURLConnection协议.</p>
+<p><strong>主要功能</strong></p>
+<ul>
+<li><p>全局网络线程的创建</p>
+</li>
+<li><p>使用网络线程创建NSURLConnection发送请求，以及实现NSURLConenction代理方法来处理请求的返回数据。</p>
+</li>
+<li><p>向用户发送请求的各种消息。</p>
+</li>
+<li><p>控制着请求的生命周期，暂停，恢复，取消。</p>
+</li>
+<li><p>可以监听处理批量请求的完成度，有多少个请求已经完成。</p>
+</li>
+<li><p>请求结束之后调用回调用户的业务逻辑</p>
+</li>
+</ul>
+<p><strong>组成：</strong></p>
+<ul>
+<li><p>networkRequestThread 全局的网络线程对象，用于所有网络请求对象NSURLConnection的初始化|暂停|取消|。与NSURLConnection相关的逻辑都是由它来完成的。</p>
+</li>
+<li><p>NSURLRequest 包含了一个网络请求的封装。</p>
+</li>
+<li><p>NSURLResponse 包含了一个网络返回的封装，它是在connection:didReceiveResponse的方法中设置。</p>
+</li>
+<li><p>NSData responseData 网络返回的数据，在connectionDidFinishLoading方法中获取。</p>
+</li>
+<li><p>NSInputStream 一个用于读取数据的流，是为NSURLRequest httpBody准备的。</p>
+</li>
+<li><p>NSOutputStream 一个用户获取网络返回数据的流，在Connection:didReceiveData中将返回的数据一部分一部分的读入,然后在connectionDidFinishLoading方法中将数据填充到responseData中。相当于所有下载的数据会缓存到NSOutputStream中，最后请求结束之后在创建一个完整的responseData。</p>
+</li>
+<li><p>completionQueue 队列，用于当请求结束的时候将后续的用户业务逻辑以bock的方法放到该队列中执行。</p>
+</li>
+<li><p>completionGroup 组，用于上一条的队列，它是和batchOfRequestOperations:progressBlock:completionBlock:方法联合起来使用的，通过dispatch_group_t派发组，可以监听多个请求的返回结果的处理完成的事件以及最后所有的请求处理完成的事件。</p>
+</li>
+<li><p>AFNetworkingOperationDidStartNotification定义用于向用户发送网络请求已经开始的通知。</p>
+</li>
+<li><p>AFNetworkingOperationDidFinishNotification，定义用于向用户发送网络请求已经结束的通知，在暂停|请求成功|请求失败的时候都会触发，参数是Operation自身。</p>
+</li>
+<li><p>completionBlock，在NSOperation结束的时候触发，用来处理请求结束之后的业务逻辑，结束指的是请求成功|失败|暂停|取消。</p>
+</li>
+<li><p>error，用于保存请求中发生的任务错误信息。</p>
+</li>
+</ul>
+<h3 id="AFHTTPRequestOperation"><a href="#AFHTTPRequestOperation" class="headerlink" title="AFHTTPRequestOperation"></a>AFHTTPRequestOperation</h3><p>AFHTTPRequestOperation继承自AFURLConnectionOperation,它区别与后者的部分</p>
+<p><strong>组成：</strong></p>
+<ul>
+<li><p>responseSerializationError 用于保存反序列化的过程中发生的错误</p>
+</li>
+<li><p>responseSerializer 它是用于请求结果反序列化的对象，具体可以参考源码分析总结2，默认是AFHTTPResponseSerializer。</p>
+</li>
+<li><p>responseObject, 它是具体的业务对象的数据(常用的数据形式，还不是业务model层)，它是通过responseSerializer反序列化而来 </p>
+</li>
+</ul>
+<p><strong>功能：</strong></p>
+<ul>
+<li><p>重写了父类的pause方法，在暂停的时候，对请求对象Request的header做了修改，通过response的ETag字段，设置了请求头If-Range字段。用来实现断点续传的效果，但是仅仅是在app还在运行状态的时候有用。如果app退出则无效果，因为数据是通过NSOutputStream缓存在内存中的，而且If-Range这些信息也仅仅存在于内存对象中。</p>
+</li>
+<li><p>重写了error方法，优先返回反序列化错误，后返回父类请求中发生的错误。</p>
+</li>
+<li><p>定义了自己的setCompletionBlockWithSuccess:failure:方法，先检查是否有父类的请求错误，再进行反序列化，最后才会回调请求成功的业务逻辑。</p>
+</li>
+</ul>
+<h2 id="AFHTTPRequestOperationManager"><a href="#AFHTTPRequestOperationManager" class="headerlink" title="AFHTTPRequestOperationManager"></a>AFHTTPRequestOperationManager</h2><p>AFHTTPRequestOperationManager是用来管理请求的BaseURL以及多个具体的请求，维护着一个请求队列，请求参数序列化的过程中产生的错误由它以回调的方式告知用户。</p>
+<p><strong>组成：</strong></p>
+<ul>
+<li><p>baseURL 用于保存请求的域</p>
+</li>
+<li><p>requestSerializer 用于某一个请求的参数序列化对象，它的作用就是生成一个NSMutableURLRequest请求对象，该对象最终用于生成AFHTTPRequestOperation对象，默认是AFHTTPRequestSerializer对象。</p>
+</li>
+<li><p>responseSerializer 用于某一个请求的返回数据的反序列化，是由AFHTTPRequestOperationManager保存，用来给AFHTTPRequestOperation设置反序列化对象。</p>
+</li>
+<li><p>operationQueue 存放每个请求的队列，放到队列的请求由系统分配线程完成请求。</p>
+</li>
+<li><p>reachabilityManager 用于判断网络是否可用的组件</p>
+</li>
+</ul>
+</div><script type="text/javascript" src="/js/share.js?v=0.0.0" async></script><a data-url="http://yoursite.com/2016/10/13/AFNetworking-NSURLConnection/" data-id="cj49nilr6000tx8cvo6r718e3" class="article-share-link">分享</a><div class="tags"><a href="/tags/源码分析/">源码分析</a></div><div class="post-nav"><a href="/2016/10/13/AFNetWorking—NSURLSession/" class="pre">AFNetWorking—NSURLSession</a><a href="/2016/10/13/AFNetworking-ResponseSerializer/" class="next">AFNetworking-ResponseSerializer</a></div></div></div></div><div class="pure-u-1-4 hidden_mid_and_down"><div id="sidebar"><div class="widget"><form action="//www.google.com/search" method="get" accept-charset="utf-8" target="_blank" class="search-form"><input type="text" name="q" maxlength="20" placeholder="Search"/><input type="hidden" name="sitesearch" value="http://yoursite.com"/></form></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> 分类</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Tech/">Tech</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-star-o"> 标签</i></div><div class="tagcloud"><a href="/tags/hexo/" style="font-size: 15px;">hexo</a> <a href="/tags/iOS/" style="font-size: 15px;">iOS</a> <a href="/tags/源码分析/" style="font-size: 15px;">源码分析</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> 最近文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2016/10/13/AFNetWorking—NSURLSession/">AFNetWorking—NSURLSession</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/13/AFNetworking-NSURLConnection/">AFNetworking-NSURLConnection</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/13/AFNetworking-ResponseSerializer/">AFNetworking-ResponseSerializer</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/13/AFNetworking-RequestSerializer/">AFNetworking-RequestSerializer</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/01/26/CFRunLoop/">CFRunLoop</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/01/26/RunLoop介绍/">RunLoop介绍</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/01/26/hexo-github/">hexo+github</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/01/25/Runloop和多线程/">Runloop和多线程</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/01/25/ReactiveCocoa2/">ReactiveCocoa2</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/01/25/ReactiveCocoa1/">ReactiveCocoa1</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-external-link"> 友情链接</i></div><ul></ul><a href="http://www.example1.com/" title="site-name1" target="_blank">site-name1</a><ul></ul><a href="http://www.example2.com/" title="site-name2" target="_blank">site-name2</a><ul></ul><a href="http://www.example3.com/" title="site-name3" target="_blank">site-name3</a></div></div></div><div class="pure-u-1 pure-u-md-3-4"><div id="footer">Copyright © 2017 <a href="/." rel="nofollow">一只独来独往的水鸟.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a><a rel="nofollow" target="_blank" href="https://github.com/tufu9441/maupassant-hexo"> Theme</a> by<a rel="nofollow" target="_blank" href="https://github.com/pagecho"> Cho.</a></div></div></div><a id="rocket" href="#top" class="show"></a><script type="text/javascript" src="/js/totop.js?v=0.0.0" async></script><script type="text/javascript" src="//cdn.bootcss.com/fancybox/3.0.47/jquery.fancybox.min.js" async></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.0" async></script><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/fancybox/3.0.47/jquery.fancybox.min.css"><script type="text/javascript" src="/js/codeblock-resizer.js?v=0.0.0"></script><script type="text/javascript" src="/js/smartresize.js?v=0.0.0"></script></div></body></html>
