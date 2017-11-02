@@ -9,23 +9,24 @@
 <p>__CFRunLoopRun具体源码分析可见<a href="http://huanshijiushiniu.github.io/2016/01/26/CFRunLoop/" target="_blank" rel="external">这篇博客</a>，根据源码提炼出Runloop循环的主要流程如下图：</p>
 <p><img src="http://7xqgnx.com1.z0.glb.clouddn.com/runLoop%E5%BE%AA%E7%8E%AF%E6%B5%81%E7%A8%8B.png" alt="runLoop循环流程"></p>
 <a id="more"></a>
-<h5 id="RunLoop_u5904_u7406_u7684_u4E8B_u4EF6_u6E90_u5F52_u7C7B"><a href="#RunLoop_u5904_u7406_u7684_u4E8B_u4EF6_u6E90_u5F52_u7C7B" class="headerlink" title="RunLoop处理的事件源归类"></a>RunLoop处理的事件源归类</h5><p>RunLoop处理的事件源总体其实可以分为两大类，第一类的source0，第二类类是基于MachPort的消息。</p>
-<p>平时UIView的事件处理以及代码中定义的block调用都属于source0，而线程之间的消息通讯，通过GCD派发到</p>
-<p>主线程的任务以及NSTimer都是基于MachPort消息实现的。所以在流程图中，我将第二类进行了突出，表示它</p>
-<p>们是一大类型。在官方文档中，它分为timer，source，Oberserver，source又分为source0和source1，单独将</p>
-<p>timer拿出来。</p>
-<h5 id="RunLoop_u7684_u54EA_u4E9B_u72B6_u6001_u503C_u5F97_u88AB_u5173_u6CE8"><a href="#RunLoop_u7684_u54EA_u4E9B_u72B6_u6001_u503C_u5F97_u88AB_u5173_u6CE8" class="headerlink" title="RunLoop的哪些状态值得被关注"></a>RunLoop的哪些状态值得被关注</h5><p>source0的任务执行前 RunLoop处于的状态是KCFRunLoopBeforeSources</p>
-<p>基于machPort的任务执行前 RunLoop处于的状态是kCFRunLoopBeforeSources或者kCFRunLoopAfterWaiting</p>
-<p>所以只需要监听Runloop的状态在CFRunLoopBeforeSources和CFRunLoopAfterWaiting这两个状态是否产生</p>
-<p>了制定时间的执行时间就可以判断是否发生卡顿了。而CFRunLoopBeforeWaiting之后，Runloop就进入睡眠了</p>
-<p>没有处理其他事件源的逻辑，如果监控该状态，在主线程睡眠的时候，就会判断为卡顿了，产生误报。</p>
-<h5 id="u76D1_u63A7_u4E3B_u7EBF_u7A0BRunloop_u7684_u72B6_u6001_u53D8_u5316"><a href="#u76D1_u63A7_u4E3B_u7EBF_u7A0BRunloop_u7684_u72B6_u6001_u53D8_u5316" class="headerlink" title="监控主线程Runloop的状态变化"></a>监控主线程Runloop的状态变化</h5><p>开启一个子线程，让子线程去检测主线程Runloop的状态变化。在每次Runloop状态发生变化的时候，通过</p>
-<p>dispatch_semaphore_signal发送一个信号，使得信号量的值加1.让子线程一直关注semaphore的变化，如果主线</p>
-<p>程在Runloop某一个状态停留太久，那么semaphore会让子线程阻塞，直到超时，即发生了卡顿。</p>
+<h2 id="RunLoop_u5904_u7406_u7684_u4E8B_u4EF6_u6E90_u5F52_u7C7B"><a href="#RunLoop_u5904_u7406_u7684_u4E8B_u4EF6_u6E90_u5F52_u7C7B" class="headerlink" title="RunLoop处理的事件源归类"></a>RunLoop处理的事件源归类</h2><p>RunLoop处理的事件源总体其实可以分为两大类，第一类的source0，第二类类是基于MachPort的消息。</p>
+<p>平时UIView的事件处理以及代码中定义的block调用都属于source0，而线程之间的消息通讯，通过GCD派</p>
+<p>发到主线程的任务以及NSTimer都是基于MachPort消息实现的。所以在流程图中，我将第二类进行了</p>
+<p>突出，表示它们是一大类型。在官方文档中，它分为timer，source，Oberserver，source又分</p>
+<p>为source0和source1，单独将timer拿出来。</p>
+<h2 id="RunLoop_u7684_u54EA_u4E9B_u72B6_u6001_u503C_u5F97_u88AB_u5173_u6CE8"><a href="#RunLoop_u7684_u54EA_u4E9B_u72B6_u6001_u503C_u5F97_u88AB_u5173_u6CE8" class="headerlink" title="RunLoop的哪些状态值得被关注"></a>RunLoop的哪些状态值得被关注</h2><p>source0的任务执行前 RunLoop处于的状态是KCFRunLoopBeforeSources</p>
+<p>基于machPort的任务执行前 RunLoop处于的状态是kCFRunLoopBeforeSources或者</p>
+<p>kCFRunLoopAfterWaiting所以只需要监听Runloop的状态在CFRunLoopBeforeSources和</p>
+<p>CFRunLoopAfterWaiting这两个状态是否产生了制定时间的执行时间就可以判断是否发生卡顿了。</p>
+<p>而CFRunLoopBeforeWaiting之后，Runloop就进入睡眠了，没有处理其他事件源的逻辑。</p>
+<p>如果监控该状态，在主线程睡眠的时候，就会判断为卡顿了，产生误报。</p>
+<h2 id="u76D1_u63A7_u4E3B_u7EBF_u7A0BRunloop_u7684_u72B6_u6001_u53D8_u5316"><a href="#u76D1_u63A7_u4E3B_u7EBF_u7A0BRunloop_u7684_u72B6_u6001_u53D8_u5316" class="headerlink" title="监控主线程Runloop的状态变化"></a>监控主线程Runloop的状态变化</h2><p>开启一个子线程，让子线程去检测主线程Runloop的状态变化。在每次Runloop状态发生变化的时候，通过</p>
+<p>dispatch_semaphore_signal发送一个信号，使得信号量的值加1.让子线程一直关注semaphore的变化，</p>
+<p>如果主线程在Runloop某一个状态停留太久，那么semaphore会让子线程阻塞，直到超时，即发生了卡顿。</p>
 <figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">//&#20840;&#23616;&#25110;&#32773;&#25104;&#21592;&#21464;&#37327;&#10;CFRunLoopActivity currentActivity;&#10;&#10;//&#20449;&#21495;&#37327;&#10;dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);&#10;&#10;//&#26816;&#27979;&#20027;&#32447;&#31243;Runloop&#29366;&#24577;&#10;CFRunLoopObserverRef observerRef = CFRunLoopObserverCreateWithHandler(kCFAllocatorDefault, kCFRunLoopAllActivities, YES, 0, ^(CFRunLoopObserverRef observer, CFRunLoopActivity activity) &#123;&#10;        if (self != nil &#38;&#38; semaphore != NULL) &#123;&#10;            currentActivity = activity;&#10;            dispatch_semaphore_signal(semaphore);&#10;        &#125;&#10;    &#125;);&#10;    CFRunLoopAddObserver(CFRunLoopGetMain(), observerRef, kCFRunLoopCommonModes);&#10;    CFRelease(observerRef);&#10;&#10;//&#36890;&#36807;&#20449;&#21495;&#37327;&#35745;&#31639;&#26576;&#19968;&#29366;&#24577;&#19979;&#26159;&#21542;&#25191;&#34892;&#36229;&#36807;&#21046;&#23450;&#26102;&#38388;&#65292;&#36825;&#37324;&#26159;1s&#10;while (!self.cancelled) &#123;&#10;        long status = dispatch_semaphore_wait(semaphore, dispatch_time(DISPATCH_TIME_NOW, 1000 * NSEC_PER_MSEC));&#10;        if (status != 0) &#123;&#10;            if (self.cancelled || semaphore == NULL) &#123;&#10;                return;&#10;            &#125;&#10;            if (currentActivity == kCFRunLoopBeforeSources || currentActivity == kCFRunLoopAfterWaiting ) &#123;&#10;                if (self.cancelled) return;&#10;                //&#21457;&#29983;&#20102;&#21345;&#39039;&#10;                NSLog(@&#34;&#21345;&#39039;&#20102;&#34;);&#10;                if (self.cancelled) return;&#10;                dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);&#10;            &#125;&#10;        &#125;&#10;    &#125;</span><br></pre></td></tr></table></figure>
 <p>最后用一张图来展示整个流程：</p>
 <p><img src="http://7xqgnx.com1.z0.glb.clouddn.com/kadun.png" alt="卡顿监测"></p>
-<h3 id="FPS"><a href="#FPS" class="headerlink" title="FPS"></a>FPS</h3><p>CADisplayLink是与屏幕刷新保持同步的定时器，通过它可以计算出实时的屏幕帧率。</p>
+<h1 id="FPS"><a href="#FPS" class="headerlink" title="FPS"></a>FPS</h1><p>CADisplayLink是与屏幕刷新保持同步的定时器，通过它可以计算出实时的屏幕帧率。</p>
 <p>在理想情况下，每秒60帧，CADdisplayLink回调的时间间隔就是1/60 ≈ 0.0167秒。</p>
 <p>在runloop每次迭代的过程中，如果有耗时的任务，会增加CADdisplayLink回调时长，相对来说，计算出来</p>
 <p>的帧率就会较小。屏幕绘制的时候，发生跳帧。</p>
