@@ -1,7 +1,8 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content="博客"><title>Node小结 | 一只独来独往的水鸟</title><link rel="stylesheet" type="text/css" href="/css/style.css?v=0.0.0"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/normalize/6.0.0/normalize.min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/0.6.2/pure-min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/0.6.2/grids-responsive-min.css"><link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css"><script type="text/javascript" src="//cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script><link rel="Shortcut Icon" type="image/x-icon" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">Node小结</h1><a id="logo" href="/.">一只独来独往的水鸟</a><p class="description">iOS</p></div><div id="nav-menu"><a href="/." class="current"><i class="fa fa-home"> 首页</i></a><a href="/archives/"><i class="fa fa-archive"> 归档</i></a></div></div><div id="layout" class="pure-g"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">Node小结</h1><div class="post-meta">Jan 11, 2018<span> | </span><span class="category"><a href="/categories/Tech/">Tech</a></span><script src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js" async></script><span id="busuanzi_container_page_pv"> | <span id="busuanzi_value_page_pv"></span><span> 阅读</span></span></div><div class="post-content"><p>​    最近工作中用到了Node，实现了一个数据抓取处理的自动化工具。平时的使用中，主要还是依</p>
 <p>赖各种库。对Node本身的一些原理性的东西也不是很清楚，只是会参考文档使用API，所以需要学习总结一下~</p>
-<h3 id="要点"><a href="#要点" class="headerlink" title="要点"></a>要点</h3><ul>
+<h2 id="要点"><a href="#要点" class="headerlink" title="要点"></a>要点</h2><ul>
 <li>Node平台的结构</li>
+<li>js调用C++</li>
 <li>异步IO</li>
 <li>事件循环</li>
 <li>异步流程处理</li>
@@ -9,12 +10,137 @@
 <li>相关的工具</li>
 </ul>
 <a id="more"></a>
-<h5 id="Node平台的结构"><a href="#Node平台的结构" class="headerlink" title="Node平台的结构"></a>Node平台的结构</h5><p>​    Node使用js来进行开发，既可以用来写一些命令行的脚本工具，也可以用来开发服务端接口。显然js已经</p>
+<h4 id="Node平台的结构"><a href="#Node平台的结构" class="headerlink" title="Node平台的结构"></a>Node平台的结构</h4><p>​    Node使用js来进行开发，既可以用来写一些命令行的脚本工具，也可以用来开发服务端接口。显然js已经</p>
 <p>脱离了浏览器的运行环境，并且平时的开发都是异步为主js又是单线程，是如何实现呢。需要先了解一下Node的</p>
 <p>结构：</p>
 <p>​    <img src="http://7xqgnx.com1.z0.glb.clouddn.com/Node%E5%B9%B3%E5%8F%B0%E7%BB%93%E6%9E%84.png" alt=""></p>
-<p>​    在你写的js代码中分为2部分，第一部分是不会调用到底层api的比如一些业务数据的运算，这部分通过</p>
-<p>V8解释之后生成本地代码直接运行。第二部分是通过js调用底层api比如涉及文件和网络IO，这部分通过V8</p>
-<p>解释之后再由Node bindings转化到libuv层的调用，在Node加载的过程中会将一些系统库加载到V8中供js调用。</p>
-<h5 id="异步IO"><a href="#异步IO" class="headerlink" title="异步IO"></a>异步IO</h5><h5 id="事件循环"><a href="#事件循环" class="headerlink" title="事件循环"></a>事件循环</h5><h5 id="模块的加载和查找"><a href="#模块的加载和查找" class="headerlink" title="模块的加载和查找"></a>模块的加载和查找</h5><h5 id="相关工具推荐"><a href="#相关工具推荐" class="headerlink" title="相关工具推荐"></a>相关工具推荐</h5><h6 id="Reference"><a href="#Reference" class="headerlink" title="Reference:"></a>Reference:</h6><p>​    </p>
-</div><script type="text/javascript" src="/js/share.js?v=0.0.0" async></script><a data-url="http://yoursite.com/2018/01/11/Node小结/" data-id="cjcbjd960000ziccvzs0r2ofi" class="article-share-link">分享</a><div class="tags"><a href="/tags/Node/">Node</a></div><div class="post-nav"><a href="/2017/11/02/iOS性能监控/" class="next">iOS性能监控</a></div></div></div></div><div class="pure-u-1-4 hidden_mid_and_down"><div id="sidebar"><div class="widget"><form action="//www.google.com/search" method="get" accept-charset="utf-8" target="_blank" class="search-form"><input type="text" name="q" maxlength="20" placeholder="Search"/><input type="hidden" name="sitesearch" value="http://yoursite.com"/></form></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> 分类</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Tech/">Tech</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Tools/">Tools</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-star-o"> 标签</i></div><div class="tagcloud"><a href="/tags/源码分析/" style="font-size: 15px;">源码分析</a> <a href="/tags/iOS/" style="font-size: 15px;">iOS</a> <a href="/tags/hexo/" style="font-size: 15px;">hexo</a> <a href="/tags/git/" style="font-size: 15px;">git</a> <a href="/tags/Node/" style="font-size: 15px;">Node</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> 最近文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2018/01/11/Node小结/">Node小结</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/11/02/iOS性能监控/">iOS性能监控</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/09/25/Method Swizzle的危机/">Method Swizzle的危机</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/07/25/GitHook/">Git Hook</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/06/19/Method Swizzle中的对象模型/">Method Swizzle中的对象模型</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/05/19/iOS定位库-INTULocationRequest/">iOS定位库-INTULocationRequest</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/13/AFNetWorking—NSURLSession/">AFNetWorking—NSURLSession</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/13/AFNetworking-NSURLConnection/">AFNetworking-NSURLConnection</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/13/AFNetworking-ResponseSerializer/">AFNetworking-ResponseSerializer</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/13/AFNetworking-RequestSerializer/">AFNetworking-RequestSerializer</a></li></ul></div></div></div><div class="pure-u-1 pure-u-md-3-4"><div id="footer">Copyright © 2018 <a href="/." rel="nofollow">一只独来独往的水鸟.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a><a rel="nofollow" target="_blank" href="https://github.com/tufu9441/maupassant-hexo"> Theme</a> by<a rel="nofollow" target="_blank" href="https://github.com/pagecho"> Cho.</a></div></div></div><a id="rocket" href="#top" class="show"></a><script type="text/javascript" src="/js/totop.js?v=0.0.0" async></script><script type="text/javascript" src="//cdn.bootcss.com/fancybox/3.0.47/jquery.fancybox.min.js" async></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.0" async></script><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/fancybox/3.0.47/jquery.fancybox.min.css"><script type="text/javascript" src="/js/codeblock-resizer.js?v=0.0.0"></script><script type="text/javascript" src="/js/smartresize.js?v=0.0.0"></script></div></body></html>
+<p>​    在Node开始运行的时候，会进行C++库的加载。在js代码运行的时候，通过V8解析执行，再由于Node </p>
+<p>bindings绑定到C++的调用上，这一切发生在V8的运行阶段。V8保证了js的运行环境，所以js可以在任何有v8的</p>
+<p>环境中运行。libuv是一个主要来负责Node中异步处理和事件驱动以及跨平台的调用，也就是说在js中对于系统</p>
+<p>api的调用都会通过libuv来实现，js只负责了调用和回调的处理。js和C++部分的调用有需要通过jsBinding来</p>
+<p>处理的。</p>
+<p>​    Node中的异步主要是通过libuv来实现，当任务完成之后，libuv通过回调来通知js层。</p>
+<h4 id="js调用C"><a href="#js调用C" class="headerlink" title="js调用C++"></a>js调用C++</h4><p>js调用C++主要依赖于V8的运行时，现在考虑以下js代码如何最终调用libuv中的文件读写函数：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>);</span><br><span class="line">fs.readFileSync(<span class="string">'path'</span>);</span><br></pre></td></tr></table></figure>
+<p>对于libuv部分的C++库，在Node加载的时候会被加载到V8中等待Js的调用。</p>
+<p>对于JS部分的代码，会通过V8进行编译解释，再通过jsbinding调用到C++的接口。既然JS能够调用到C++的接口，</p>
+<p>那么C++中必然有相应能够表示JS对象和方法的对象，在Node中通过XXWrap来进行封装的。比如针对现在的例子</p>
+<p>fs对应的就是FSReqWrap对象，它位于node_file.cc文件中。</p>
+<p>在Node开始执行js代码之前，首先会对自己进行初始化，加载自身的C++库。对于C++库中的对象，以当前代码</p>
+<p>为例子它不会直接创建FSReqWrap对象，而是将该对象的初始化函数通过node_module_register函数保存到一个</p>
+<p>全局的表中，那么什么时候会真正初始化对象呢。</p>
+<p>在fs.js源文件中有：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> binding = process.binding(<span class="string">'fs'</span>);</span><br></pre></td></tr></table></figure>
+<p>也就是在这行代码被调用的时候，FSReqWrap对象开始初始化，以便可以js调用</p>
+<p>在下面代码执行的时候，上面的process.binding(‘fs’)也就会被调用了：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> fs = rquire(<span class="string">'fs'</span>);</span><br></pre></td></tr></table></figure>
+<p>也就是说什么时候你使用了fs这个库，什么时候C++中对应的FSReqWrap对象进行加载和初始化。这也是为了加载</p>
+<p>时间以及运行效率考虑吧，类似懒加载的策略。</p>
+<p>现在来看一下FSReqWrap初始化的时候做了哪些事呢：</p>
+<p>在node_file.cc中：</p>
+<p>因为初始化函数比较长，所以分成2块：</p>
+<p><img src="http://7xqgnx.com1.z0.glb.clouddn.com/C++%E5%AF%B9%E8%B1%A1%E5%88%9D%E5%A7%8B%E5%8C%961.png" alt=""></p>
+<p>这一部分其实是往上下文对象中注册当前对象的函数信息，例如js中调用’read’的时候，对应到C++对象中对应</p>
+<p>的函数是哪一个</p>
+<p><img src="http://7xqgnx.com1.z0.glb.clouddn.com/C++%E5%AF%B9%E8%B1%A1%E5%88%9D%E5%A7%8B%E5%8C%962.png" alt=""></p>
+<p>这一部分主要是往上下文对象context中注册类型信息，也就是说在js中使用对象’fs’对应到C++中是哪一个对象</p>
+<p>通过这种方式，将js中某个对象的某个方法调用和C++中的实现对应关系存到上线文对象context中了。</p>
+<p>剩下的部分只需要V8解释执行js的时候，从上下文对象中获取这些信息就能将js的调用转化到C++的调用上了</p>
+<p>实质上在V8解释js的时候主要运用了两个函数：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">script::Compile</span><br><span class="line">script::run</span><br></pre></td></tr></table></figure>
+<p>这两个函数调用的时候，V8会将上下文对象context传入。</p>
+<p>现在通过一张图总结一下整个过程：图中context有标号1和2，代表着它们的执行顺序。</p>
+<p><img src="http://7xqgnx.com1.z0.glb.clouddn.com/js%E8%B0%83%E7%94%A8C++.PNG" alt=""></p>
+<p>右边的部分会在Node初始化的时候进行加载，这个过程主要是initFs初始化函数指针，FSReqWrap类型信息以及</p>
+<p>FSReqWrap类型包含的函数注册到全局表中。在之后js代码调用中再根据需要去完成FSReqWrap的初始化，并</p>
+<p>通过上下文对象查找到需要调用的FSReqWrap和相关函数。</p>
+<h4 id="异步IO"><a href="#异步IO" class="headerlink" title="异步IO"></a>异步IO</h4><p>还是通过文件读写的例子来进行说明：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">var fs = require(&apos;fs&apos;);</span><br><span class="line">fs.readFile(&apos;path1&apos;, &apos;utf-8&apos;, callback1);</span><br><span class="line">fs.readFile(&apos;path2&apos;, &apos;utf-8&apos;, callback2);</span><br><span class="line">fs.readFile(&apos;path3&apos;, &apos;utf-8&apos;, callback3);</span><br></pre></td></tr></table></figure>
+<p>现在通过fs对象读取文本文件，都是异步的方式，传入回调函数。在JS层是调用readFile之后直接返回接着执行</p>
+<p>后面的代码，当文件读取完成在执行相应的callback。文件的读写功能在Node中通过libuv来实现，在libuv中文件</p>
+<p>读写内部是通过不同的线程来完成，内部维护这一个线程池。</p>
+<p>如下图所示：</p>
+<p><img src="http://7xqgnx.com1.z0.glb.clouddn.com/%E5%BC%82%E6%AD%A5IO.png" alt=""></p>
+<p>左侧绿色部分的流程是js所在线程的执行过程，每一次调用readFile之后接着往下执行下一个readFile。对于每一</p>
+<p>次readFile的调用最终通过NodeBindings转换到libuv库中相关函数的调用，每一次文件读取派发到一个线程来完</p>
+<p>成。等待文件读取完成，再通知js层callback回调。通过分析js层的调用顺序应该是fun1-&gt;fun2-&gt;fun3 后面3个</p>
+<p>callback的先后顺序则是依赖libuv中文件读取完成的先后顺序，通过libuv来实现了js层的异步IO。</p>
+<h4 id="事件循环"><a href="#事件循环" class="headerlink" title="事件循环"></a>事件循环</h4><p>在异步IO小结中，说明了Node中的异步IO是如何设计的。针对具体libuv如何通知js回调的过程，就需要了解一下</p>
+<p>Node中事件循环中的设计：</p>
+<p><img src="http://7xqgnx.com1.z0.glb.clouddn.com/%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF%E9%98%9F%E5%88%97.png" alt="事件循环队列"></p>
+<p>libuv将各种系统层面的操作都封装成了一个事件对象，js和libuv之间的交互都是以事件进行驱动的。图中左侧是</p>
+<p>libuv中设计的用于存储各种事件的队列，右侧则是uv_run函数运行的基本流程，类似一个不断迭代的循环，每次</p>
+<p>迭代的过程中去检查各类对列中有没有需要处理的已经完成的事件，来驱动后面的流程。</p>
+<p>通过文件读写的例子来说明一下详细过程：</p>
+<p><img src="http://7xqgnx.com1.z0.glb.clouddn.com/%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF%E8%BF%87%E7%A8%8B.png" alt=""></p>
+<p>上图中浅蓝色的部分是整个流程中与文件读写有关系的部分，当js层调用了文件读取的函数后，通过jsbinding转化</p>
+<p>成对libuv层的调用。libuv会先将文件读写的请求封装成一个事件对象(存储了回调函数)，并将该事件对象注册到</p>
+<p>uv_fs_events队列中，然后将文件读写的任务派发给工作线程池中的一个闲置线程。等待该线程文件读写的任务完</p>
+<p>成之后，通过修改uv_fs_events中事件对象的状态来进行通知。随后在uv_run的迭代中，检查uv_fs_events中</p>
+<p>事件对象的状态发生变化，然后通过回调的方式通知js层文件读写已经完成。</p>
+<h4 id="模块的加载和查找"><a href="#模块的加载和查找" class="headerlink" title="模块的加载和查找"></a>模块的加载和查找</h4><h5 id="模块分类"><a href="#模块分类" class="headerlink" title="模块分类"></a>模块分类</h5><p>在说明Node中模块的加载和查找之前，先看一下Node中模块的分类：</p>
+<p><img src="http://7xqgnx.com1.z0.glb.clouddn.com/Node%E6%A8%A1%E5%9D%97%E7%9A%84%E5%88%86%E7%B1%BB.png" alt=""></p>
+<p>Node中模块可以分为两大类：</p>
+<p>第一类是原生模块，Node自带的功能组件，比如’http’ ‘fs’等。第二类是自定义模块，我们可以通过自己封装一些</p>
+<p>功能到js,C++,json文件中，C++主要是用来针对一些系统或者是需要性能的部分来进行扩展，js主要是自己定义的</p>
+<p>业务模块,json文件可以用来放置一些数据或者配置信息。而package文件夹，最熟悉的就是通过npm install 安装</p>
+<p>的第三方模块了，这些都可以通过require的方式进行加载。</p>
+<p>通常需要引用一个模块的时候使用require()方法，作为一个模块要导出你想公开的接口使用exports/</p>
+<p>module.exports。</p>
+<h5 id="模块文件加载"><a href="#模块文件加载" class="headerlink" title="模块文件加载"></a>模块文件加载</h5><p>module加载有一套自身的流程，在此之前先看一下对于一个全新Module，Node如何加载:</p>
+<p><img src="http://7xqgnx.com1.z0.glb.clouddn.com/module%E5%8A%A0%E8%BD%BD.png" alt=""></p>
+<p>在Node中，每个模块都是通过一个Module对象处理的，所以当你使用require(‘module’)引用一个新模块的时</p>
+<p>候，Node会创建一个Module对象。Module对象在初始化的过程中会初始化当前module的exports属性(也就是</p>
+<p>你在js文件中使用的Module.exports了)，生成新的Module中使用的require函数。然后调用load方法来加载文</p>
+<p>件，它首先会进行文件类型的判断，根据文件类型进行加载。对于C++模块，会调用process.dlopen方法加载。</p>
+<p>对于json文件则读取出来，再通过JSON.parse转化成json对象，并赋值给module.exports。对于js文件，会调用</p>
+<p>_compile方法，更复杂一些下面会单独介绍。</p>
+<p>总结一下，在生成module对象的时候会初始化exports属性和require函数，然后load方法主要是加载具体的模块</p>
+<p>文件，最终的目的是给module.exports赋值，到最后require函数返回的是新生成的module.exports属性。</p>
+<p>现在来看一下对于js文件，Node如何通过Module对象加载：</p>
+<p><img src="http://7xqgnx.com1.z0.glb.clouddn.com/_compile%E5%87%BD%E6%95%B0%E7%9A%84%E5%AE%9E%E7%8E%B0.png" alt=""></p>
+<p>在Module的load方法中，对于js文件会调用_compile方法，在 _compile中会先调用wrap方法。wrap方法主要</p>
+<p>是对于当前要加载js文件通过function做了一层包装，function的参数传入了当前module中的exports，require</p>
+<p>以及module自身。然后将该function传递给v8的runInThisContext函数，runInThisContext函数主要做的事情就</p>
+<p>是去执行这个传入的function，其实就相当于在执行你自己写好的js文件中的所有代码，这个时候最终会执行你自</p>
+<p>己写的module.exports=xxxx。也就是说你写的js代码会在require的时候被执行，js代码中本身使用到的require</p>
+<p>和module.exports都是通过当时运行环境的上下文参数传过来的。</p>
+<p>所以和json文件加载不同的地方时，module.exports属性的赋值一个是在Node的load函数中，js文件的是在你自</p>
+<p>己的代码中。</p>
+<p>最后看一下对于package文件夹(以underscore这个库为例)，如何加载：</p>
+<p><img src="http://7xqgnx.com1.z0.glb.clouddn.com/package%E5%8A%A0%E8%BD%BD.png" alt=""></p>
+<p>Node会找到package.json文件，读取里面的main字段。按照main字段配置的值，去按相应的方式(js/json/c++)</p>
+<p>加载对应的文件。如果没有找到package.json文件，那么就直接找对应的index.js/index.json/index.node文件，</p>
+<p>再按照文件的方式加载。</p>
+<h5 id="exports和module-exports"><a href="#exports和module-exports" class="headerlink" title="exports和module.exports"></a>exports和module.exports</h5><p>看了一下Node v0.1版本的相关源码，在module类型中对于exports的定义如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">global.exports = this.exports</span><br></pre></td></tr></table></figure>
+<p>所以exports相当于一个module.exports的引用，如果是你去改版exports，对于module.exports还是之前的值</p>
+<p>并没有影响到module.exports。</p>
+<h5 id="模块文件的查找"><a href="#模块文件的查找" class="headerlink" title="模块文件的查找"></a>模块文件的查找</h5><p>以下是当调用require(‘module’)的时候，模块文件的查找流程：</p>
+<p><img src="http://7xqgnx.com1.z0.glb.clouddn.com/%E6%A8%A1%E5%9D%97%E6%96%87%E4%BB%B6%E6%9F%A5%E6%89%BE%E6%B5%81%E7%A8%8B.png" alt=""></p>
+<p>整个流程中有查找文件模块的过程，这个后面具体细说，除此之外的流程并不复杂。可以看出在查找模块文件的时</p>
+<p>候，文件缓存的优先级是最高的，其次是原生模块，最后才去文件模块中查找。猜测是跟时间复杂度有关系，从</p>
+<p>文件缓存中应该是最快的。其次是原生模块，因为原生模块所在的路径位置是相对固定的。最后才是文件模块，它</p>
+<p>的位置并不固定，查找起来就相对麻烦花费的时间更多一些。</p>
+<p>下面再单独针对文件模块的查找讲一下它的过程：</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="title">require</span><span class="params">(<span class="string">'./test'</span>)</span></span></span><br></pre></td></tr></table></figure>
+<p>module对象中有一个path方法，它返回的是在进行文件查找的时候，遍历的文件路径：</p>
+<figure class="highlight dts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta-keyword">/home/</span>jim<span class="meta-keyword">/repos/</span>node/node_modules</span><br><span class="line"><span class="meta-keyword">/home/</span>jim<span class="meta-keyword">/repos/</span>node_modules</span><br><span class="line"><span class="meta-keyword">/home/</span>jim/node_modules</span><br><span class="line"><span class="meta-keyword">/home/</span>node_modules</span><br><span class="line">/node_modules</span><br></pre></td></tr></table></figure>
+<p>首先会在执行脚本所在路径以js/json/node或者文件件夹(package)的方式夹加载test，如果没有找到就去module</p>
+<p>的path返回的路径数组逐一查找。如果最终没有找到就抛出异常：</p>
+<p><img src="http://7xqgnx.com1.z0.glb.clouddn.com/%E6%96%87%E4%BB%B6%E6%A8%A1%E5%9D%97%E6%9F%A5%E6%89%BE.png" alt=""></p>
+<h4 id="相关工具推荐"><a href="#相关工具推荐" class="headerlink" title="相关工具推荐"></a>相关工具推荐</h4><p>NVM    Node的安装/卸载以及版本管理工具</p>
+<p>NPM    模块的安装/卸载管理工具</p>
+<p>NRM    模块源的管理工具</p>
+<p>最后是IDE：我使用的是sublime + Node插件 + sublime-text2-buildview </p>
+<p>优点：编码和测试运行很方便，很轻量级，另外log信息是以一个独立窗口的形式呈现(而不是在最下面，这样log</p>
+<p>比较多的时候就不方便查看了，主要是sublime-text2-buildview的功劳)，通过安装Node插件，在调试的时候也不</p>
+<p>用在编辑器和控制台来回切换了，提高了效率。</p>
+<h5 id="Reference"><a href="#Reference" class="headerlink" title="Reference:"></a>Reference:</h5><p><a href="https://www.cnblogs.com/lijiayi/p/js_node_module.html" target="_blank" rel="noopener">https://www.cnblogs.com/lijiayi/p/js_node_module.html</a></p>
+<p><a href="http://www.infoq.com/cn/articles/nodejs-module-mechanism/#" target="_blank" rel="noopener">http://www.infoq.com/cn/articles/nodejs-module-mechanism/#</a></p>
+<p><a href="http://taobaofed.org/blog/2015/10/29/deep-into-node-1/" target="_blank" rel="noopener">http://taobaofed.org/blog/2015/10/29/deep-into-node-1/</a></p>
+<p><a href="https://i5ting.github.io/wechat-dev-with-nodejs/index.html" target="_blank" rel="noopener">https://i5ting.github.io/wechat-dev-with-nodejs/index.html</a></p>
+<p><a href="https://luzeshu.com/tech" target="_blank" rel="noopener">https://luzeshu.com/tech</a></p>
+<p><a href="http://zihua.li/2012/03/use-module-exports-or-exports-in-node/" target="_blank" rel="noopener">http://zihua.li/2012/03/use-module-exports-or-exports-in-node/</a></p>
+<p><a href="https://github.com/nodejs/node" target="_blank" rel="noopener">https://github.com/nodejs/node</a></p>
+</div><script type="text/javascript" src="/js/share.js?v=0.0.0" async></script><a data-url="http://yoursite.com/2018/01/11/Node小结/" data-id="cjcbjd960000ziccvzs0r2ofi" class="article-share-link">分享</a><div class="tags"><a href="/tags/Node/">Node</a></div><div class="post-nav"><a href="/2018/01/29/布局结束监测工具/" class="pre">布局结束监听工具</a><a href="/2017/11/02/iOS性能监控/" class="next">iOS性能监控</a></div></div></div></div><div class="pure-u-1-4 hidden_mid_and_down"><div id="sidebar"><div class="widget"><form action="//www.google.com/search" method="get" accept-charset="utf-8" target="_blank" class="search-form"><input type="text" name="q" maxlength="20" placeholder="Search"/><input type="hidden" name="sitesearch" value="http://yoursite.com"/></form></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> 分类</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Tech/">Tech</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Tools/">Tools</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-star-o"> 标签</i></div><div class="tagcloud"><a href="/tags/源码分析/" style="font-size: 15px;">源码分析</a> <a href="/tags/iOS/" style="font-size: 15px;">iOS</a> <a href="/tags/hexo/" style="font-size: 15px;">hexo</a> <a href="/tags/git/" style="font-size: 15px;">git</a> <a href="/tags/Node/" style="font-size: 15px;">Node</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> 最近文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2018/01/29/布局结束监测工具/">布局结束监听工具</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/01/11/Node小结/">Node小结</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/11/02/iOS性能监控/">iOS性能监控</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/09/25/Method Swizzle的危机/">Method Swizzle的危机</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/07/25/GitHook/">Git Hook</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/06/19/Method Swizzle中的对象模型/">Method Swizzle中的对象模型</a></li><li class="post-list-item"><a class="post-list-link" href="/2017/05/19/iOS定位库-INTULocationRequest/">iOS定位库-INTULocationRequest</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/13/AFNetWorking—NSURLSession/">AFNetWorking—NSURLSession</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/13/AFNetworking-NSURLConnection/">AFNetworking-NSURLConnection</a></li><li class="post-list-item"><a class="post-list-link" href="/2016/10/13/AFNetworking-ResponseSerializer/">AFNetworking-ResponseSerializer</a></li></ul></div></div></div><div class="pure-u-1 pure-u-md-3-4"><div id="footer">Copyright © 2018 <a href="/." rel="nofollow">一只独来独往的水鸟.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a><a rel="nofollow" target="_blank" href="https://github.com/tufu9441/maupassant-hexo"> Theme</a> by<a rel="nofollow" target="_blank" href="https://github.com/pagecho"> Cho.</a></div></div></div><a id="rocket" href="#top" class="show"></a><script type="text/javascript" src="/js/totop.js?v=0.0.0" async></script><script type="text/javascript" src="//cdn.bootcss.com/fancybox/3.0.47/jquery.fancybox.min.js" async></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.0" async></script><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/fancybox/3.0.47/jquery.fancybox.min.css"><script type="text/javascript" src="/js/codeblock-resizer.js?v=0.0.0"></script><script type="text/javascript" src="/js/smartresize.js?v=0.0.0"></script></div></body></html>
