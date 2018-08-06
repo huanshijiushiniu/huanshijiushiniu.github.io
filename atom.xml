@@ -5,9 +5,9 @@
   <subtitle>iOS</subtitle>
   <link href="/atom.xml" rel="self"/>
   
-  <link href="http://yoursite.com/"/>
+  <link href="http://huanshijiushiniu.github.io/"/>
   <updated>2018-08-06T07:22:21.883Z</updated>
-  <id>http://yoursite.com/</id>
+  <id>http://huanshijiushiniu.github.io/</id>
   
   <author>
     <name>郑智文</name>
@@ -18,8 +18,8 @@
   
   <entry>
     <title>布局结束监听工具</title>
-    <link href="http://yoursite.com/2018/01/29/%E5%B8%83%E5%B1%80%E7%BB%93%E6%9D%9F%E7%9B%91%E6%B5%8B%E5%B7%A5%E5%85%B7/"/>
-    <id>http://yoursite.com/2018/01/29/布局结束监测工具/</id>
+    <link href="http://huanshijiushiniu.github.io/2018/01/29/%E5%B8%83%E5%B1%80%E7%BB%93%E6%9D%9F%E7%9B%91%E6%B5%8B%E5%B7%A5%E5%85%B7/"/>
+    <id>http://huanshijiushiniu.github.io/2018/01/29/布局结束监测工具/</id>
     <published>2018-01-28T16:00:00.000Z</published>
     <updated>2018-08-06T07:22:21.883Z</updated>
     
@@ -32,17 +32,17 @@
     
     </summary>
     
-      <category term="Tech" scheme="http://yoursite.com/categories/Tech/"/>
+      <category term="Tech" scheme="http://huanshijiushiniu.github.io/categories/Tech/"/>
     
     
-      <category term="iOS" scheme="http://yoursite.com/tags/iOS/"/>
+      <category term="iOS" scheme="http://huanshijiushiniu.github.io/tags/iOS/"/>
     
   </entry>
   
   <entry>
     <title>Node小结</title>
-    <link href="http://yoursite.com/2018/01/11/Node%E5%B0%8F%E7%BB%93/"/>
-    <id>http://yoursite.com/2018/01/11/Node小结/</id>
+    <link href="http://huanshijiushiniu.github.io/2018/01/11/Node%E5%B0%8F%E7%BB%93/"/>
+    <id>http://huanshijiushiniu.github.io/2018/01/11/Node小结/</id>
     <published>2018-01-11T09:18:00.000Z</published>
     <updated>2018-08-06T04:03:34.828Z</updated>
     
@@ -64,17 +64,17 @@
     
     </summary>
     
-      <category term="Tech" scheme="http://yoursite.com/categories/Tech/"/>
+      <category term="Tech" scheme="http://huanshijiushiniu.github.io/categories/Tech/"/>
     
     
-      <category term="Node" scheme="http://yoursite.com/tags/Node/"/>
+      <category term="Node" scheme="http://huanshijiushiniu.github.io/tags/Node/"/>
     
   </entry>
   
   <entry>
     <title>iOS性能监控</title>
-    <link href="http://yoursite.com/2017/11/02/iOS%E6%80%A7%E8%83%BD%E7%9B%91%E6%8E%A7/"/>
-    <id>http://yoursite.com/2017/11/02/iOS性能监控/</id>
+    <link href="http://huanshijiushiniu.github.io/2017/11/02/iOS%E6%80%A7%E8%83%BD%E7%9B%91%E6%8E%A7/"/>
+    <id>http://huanshijiushiniu.github.io/2017/11/02/iOS性能监控/</id>
     <published>2017-11-01T16:00:00.000Z</published>
     <updated>2018-08-06T04:03:34.826Z</updated>
     
@@ -95,17 +95,17 @@
     
     </summary>
     
-      <category term="Tech" scheme="http://yoursite.com/categories/Tech/"/>
+      <category term="Tech" scheme="http://huanshijiushiniu.github.io/categories/Tech/"/>
     
     
-      <category term="iOS" scheme="http://yoursite.com/tags/iOS/"/>
+      <category term="iOS" scheme="http://huanshijiushiniu.github.io/tags/iOS/"/>
     
   </entry>
   
   <entry>
     <title>Method Swizzle的危机</title>
-    <link href="http://yoursite.com/2017/09/25/Method%20Swizzle%E7%9A%84%E5%8D%B1%E6%9C%BA/"/>
-    <id>http://yoursite.com/2017/09/25/Method Swizzle的危机/</id>
+    <link href="http://huanshijiushiniu.github.io/2017/09/25/Method%20Swizzle%E7%9A%84%E5%8D%B1%E6%9C%BA/"/>
+    <id>http://huanshijiushiniu.github.io/2017/09/25/Method Swizzle的危机/</id>
     <published>2017-09-24T16:00:00.000Z</published>
     <updated>2018-08-06T04:03:34.827Z</updated>
     
@@ -122,17 +122,17 @@
     
     </summary>
     
-      <category term="Tech" scheme="http://yoursite.com/categories/Tech/"/>
+      <category term="Tech" scheme="http://huanshijiushiniu.github.io/categories/Tech/"/>
     
     
-      <category term="iOS" scheme="http://yoursite.com/tags/iOS/"/>
+      <category term="iOS" scheme="http://huanshijiushiniu.github.io/tags/iOS/"/>
     
   </entry>
   
   <entry>
     <title>Git Hook</title>
-    <link href="http://yoursite.com/2017/07/25/GitHook/"/>
-    <id>http://yoursite.com/2017/07/25/GitHook/</id>
+    <link href="http://huanshijiushiniu.github.io/2017/07/25/GitHook/"/>
+    <id>http://huanshijiushiniu.github.io/2017/07/25/GitHook/</id>
     <published>2017-07-24T16:00:00.000Z</published>
     <updated>2018-08-06T04:03:34.825Z</updated>
     
@@ -150,17 +150,17 @@
     
     </summary>
     
-      <category term="Tools" scheme="http://yoursite.com/categories/Tools/"/>
+      <category term="Tools" scheme="http://huanshijiushiniu.github.io/categories/Tools/"/>
     
     
-      <category term="git" scheme="http://yoursite.com/tags/git/"/>
+      <category term="git" scheme="http://huanshijiushiniu.github.io/tags/git/"/>
     
   </entry>
   
   <entry>
     <title>Method Swizzle中的对象模型</title>
-    <link href="http://yoursite.com/2017/06/19/Method%20Swizzle%E4%B8%AD%E7%9A%84%E5%AF%B9%E8%B1%A1%E6%A8%A1%E5%9E%8B/"/>
-    <id>http://yoursite.com/2017/06/19/Method Swizzle中的对象模型/</id>
+    <link href="http://huanshijiushiniu.github.io/2017/06/19/Method%20Swizzle%E4%B8%AD%E7%9A%84%E5%AF%B9%E8%B1%A1%E6%A8%A1%E5%9E%8B/"/>
+    <id>http://huanshijiushiniu.github.io/2017/06/19/Method Swizzle中的对象模型/</id>
     <published>2017-06-18T16:00:00.000Z</published>
     <updated>2018-08-06T04:03:34.827Z</updated>
     
@@ -177,17 +177,17 @@
     
     </summary>
     
-      <category term="Tech" scheme="http://yoursite.com/categories/Tech/"/>
+      <category term="Tech" scheme="http://huanshijiushiniu.github.io/categories/Tech/"/>
     
     
-      <category term="iOS" scheme="http://yoursite.com/tags/iOS/"/>
+      <category term="iOS" scheme="http://huanshijiushiniu.github.io/tags/iOS/"/>
     
   </entry>
   
   <entry>
     <title>iOS定位库-INTULocationRequest</title>
-    <link href="http://yoursite.com/2017/05/19/iOS%E5%AE%9A%E4%BD%8D%E5%BA%93-INTULocationRequest/"/>
-    <id>http://yoursite.com/2017/05/19/iOS定位库-INTULocationRequest/</id>
+    <link href="http://huanshijiushiniu.github.io/2017/05/19/iOS%E5%AE%9A%E4%BD%8D%E5%BA%93-INTULocationRequest/"/>
+    <id>http://huanshijiushiniu.github.io/2017/05/19/iOS定位库-INTULocationRequest/</id>
     <published>2017-05-18T16:00:00.000Z</published>
     <updated>2018-08-06T04:03:34.826Z</updated>
     
@@ -205,17 +205,17 @@
     
     </summary>
     
-      <category term="Tech" scheme="http://yoursite.com/categories/Tech/"/>
+      <category term="Tech" scheme="http://huanshijiushiniu.github.io/categories/Tech/"/>
     
     
-      <category term="源码分析" scheme="http://yoursite.com/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"/>
+      <category term="源码分析" scheme="http://huanshijiushiniu.github.io/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"/>
     
   </entry>
   
   <entry>
     <title>AFNetWorking—NSURLSession</title>
-    <link href="http://yoursite.com/2016/10/13/AFNetWorking%E2%80%94NSURLSession/"/>
-    <id>http://yoursite.com/2016/10/13/AFNetWorking—NSURLSession/</id>
+    <link href="http://huanshijiushiniu.github.io/2016/10/13/AFNetWorking%E2%80%94NSURLSession/"/>
+    <id>http://huanshijiushiniu.github.io/2016/10/13/AFNetWorking—NSURLSession/</id>
     <published>2016-10-13T14:12:31.000Z</published>
     <updated>2018-08-06T04:03:34.824Z</updated>
     
@@ -230,17 +230,17 @@
     
     </summary>
     
-      <category term="Tech" scheme="http://yoursite.com/categories/Tech/"/>
+      <category term="Tech" scheme="http://huanshijiushiniu.github.io/categories/Tech/"/>
     
     
-      <category term="源码分析" scheme="http://yoursite.com/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"/>
+      <category term="源码分析" scheme="http://huanshijiushiniu.github.io/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"/>
     
   </entry>
   
   <entry>
     <title>AFNetworking-NSURLConnection</title>
-    <link href="http://yoursite.com/2016/10/13/AFNetworking-NSURLConnection/"/>
-    <id>http://yoursite.com/2016/10/13/AFNetworking-NSURLConnection/</id>
+    <link href="http://huanshijiushiniu.github.io/2016/10/13/AFNetworking-NSURLConnection/"/>
+    <id>http://huanshijiushiniu.github.io/2016/10/13/AFNetworking-NSURLConnection/</id>
     <published>2016-10-13T14:12:31.000Z</published>
     <updated>2018-08-06T04:03:34.823Z</updated>
     
@@ -255,17 +255,17 @@
     
     </summary>
     
-      <category term="Tech" scheme="http://yoursite.com/categories/Tech/"/>
+      <category term="Tech" scheme="http://huanshijiushiniu.github.io/categories/Tech/"/>
     
     
-      <category term="源码分析" scheme="http://yoursite.com/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"/>
+      <category term="源码分析" scheme="http://huanshijiushiniu.github.io/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"/>
     
   </entry>
   
   <entry>
     <title>AFNetworking-ResponseSerializer</title>
-    <link href="http://yoursite.com/2016/10/13/AFNetworking-ResponseSerializer/"/>
-    <id>http://yoursite.com/2016/10/13/AFNetworking-ResponseSerializer/</id>
+    <link href="http://huanshijiushiniu.github.io/2016/10/13/AFNetworking-ResponseSerializer/"/>
+    <id>http://huanshijiushiniu.github.io/2016/10/13/AFNetworking-ResponseSerializer/</id>
     <published>2016-10-13T14:10:34.000Z</published>
     <updated>2018-08-06T04:03:34.824Z</updated>
     
@@ -283,17 +283,17 @@
     
     </summary>
     
-      <category term="Tech" scheme="http://yoursite.com/categories/Tech/"/>
+      <category term="Tech" scheme="http://huanshijiushiniu.github.io/categories/Tech/"/>
     
     
-      <category term="源码分析" scheme="http://yoursite.com/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"/>
+      <category term="源码分析" scheme="http://huanshijiushiniu.github.io/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"/>
     
   </entry>
   
   <entry>
     <title>AFNetworking-RequestSerializer</title>
-    <link href="http://yoursite.com/2016/10/13/AFNetworking-RequestSerializer/"/>
-    <id>http://yoursite.com/2016/10/13/AFNetworking-RequestSerializer/</id>
+    <link href="http://huanshijiushiniu.github.io/2016/10/13/AFNetworking-RequestSerializer/"/>
+    <id>http://huanshijiushiniu.github.io/2016/10/13/AFNetworking-RequestSerializer/</id>
     <published>2016-10-13T12:00:00.000Z</published>
     <updated>2018-08-06T04:03:34.823Z</updated>
     
@@ -308,17 +308,17 @@
     
     </summary>
     
-      <category term="Tech" scheme="http://yoursite.com/categories/Tech/"/>
+      <category term="Tech" scheme="http://huanshijiushiniu.github.io/categories/Tech/"/>
     
     
-      <category term="源码分析" scheme="http://yoursite.com/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"/>
+      <category term="源码分析" scheme="http://huanshijiushiniu.github.io/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"/>
     
   </entry>
   
   <entry>
     <title>CFRunLoop</title>
-    <link href="http://yoursite.com/2016/01/26/CFRunLoop/"/>
-    <id>http://yoursite.com/2016/01/26/CFRunLoop/</id>
+    <link href="http://huanshijiushiniu.github.io/2016/01/26/CFRunLoop/"/>
+    <id>http://huanshijiushiniu.github.io/2016/01/26/CFRunLoop/</id>
     <published>2016-01-26T09:02:11.000Z</published>
     <updated>2018-08-06T04:03:34.825Z</updated>
     
@@ -331,17 +331,17 @@
     
     </summary>
     
-      <category term="Tech" scheme="http://yoursite.com/categories/Tech/"/>
+      <category term="Tech" scheme="http://huanshijiushiniu.github.io/categories/Tech/"/>
     
     
-      <category term="源码分析" scheme="http://yoursite.com/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"/>
+      <category term="源码分析" scheme="http://huanshijiushiniu.github.io/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"/>
     
   </entry>
   
   <entry>
     <title>RunLoop介绍</title>
-    <link href="http://yoursite.com/2016/01/26/RunLoop%E4%BB%8B%E7%BB%8D/"/>
-    <id>http://yoursite.com/2016/01/26/RunLoop介绍/</id>
+    <link href="http://huanshijiushiniu.github.io/2016/01/26/RunLoop%E4%BB%8B%E7%BB%8D/"/>
+    <id>http://huanshijiushiniu.github.io/2016/01/26/RunLoop介绍/</id>
     <published>2016-01-26T09:01:31.000Z</published>
     <updated>2018-08-06T04:03:34.830Z</updated>
     
@@ -353,17 +353,17 @@
     
     </summary>
     
-      <category term="Tech" scheme="http://yoursite.com/categories/Tech/"/>
+      <category term="Tech" scheme="http://huanshijiushiniu.github.io/categories/Tech/"/>
     
     
-      <category term="iOS" scheme="http://yoursite.com/tags/iOS/"/>
+      <category term="iOS" scheme="http://huanshijiushiniu.github.io/tags/iOS/"/>
     
   </entry>
   
   <entry>
     <title>hexo+github搭建博客</title>
-    <link href="http://yoursite.com/2016/01/26/hexo-github%E6%90%AD%E5%BB%BA%E5%8D%9A%E5%AE%A2/"/>
-    <id>http://yoursite.com/2016/01/26/hexo-github搭建博客/</id>
+    <link href="http://huanshijiushiniu.github.io/2016/01/26/hexo-github%E6%90%AD%E5%BB%BA%E5%8D%9A%E5%AE%A2/"/>
+    <id>http://huanshijiushiniu.github.io/2016/01/26/hexo-github搭建博客/</id>
     <published>2016-01-26T07:00:42.000Z</published>
     <updated>2018-08-06T04:03:34.825Z</updated>
     
@@ -380,17 +380,17 @@
     
     </summary>
     
-      <category term="Tools" scheme="http://yoursite.com/categories/Tools/"/>
+      <category term="Tools" scheme="http://huanshijiushiniu.github.io/categories/Tools/"/>
     
     
-      <category term="hexo" scheme="http://yoursite.com/tags/hexo/"/>
+      <category term="hexo" scheme="http://huanshijiushiniu.github.io/tags/hexo/"/>
     
   </entry>
   
   <entry>
     <title>Runloop和多线程</title>
-    <link href="http://yoursite.com/2016/01/25/Runloop%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/"/>
-    <id>http://yoursite.com/2016/01/25/Runloop和多线程/</id>
+    <link href="http://huanshijiushiniu.github.io/2016/01/25/Runloop%E5%92%8C%E5%A4%9A%E7%BA%BF%E7%A8%8B/"/>
+    <id>http://huanshijiushiniu.github.io/2016/01/25/Runloop和多线程/</id>
     <published>2016-01-25T08:49:34.000Z</published>
     <updated>2018-08-06T04:03:34.830Z</updated>
     
@@ -403,14 +403,14 @@
     </summary>
     
     
-      <category term="iOS" scheme="http://yoursite.com/tags/iOS/"/>
+      <category term="iOS" scheme="http://huanshijiushiniu.github.io/tags/iOS/"/>
     
   </entry>
   
   <entry>
     <title>ReactiveCocoa2</title>
-    <link href="http://yoursite.com/2016/01/25/ReactiveCocoa2/"/>
-    <id>http://yoursite.com/2016/01/25/ReactiveCocoa2/</id>
+    <link href="http://huanshijiushiniu.github.io/2016/01/25/ReactiveCocoa2/"/>
+    <id>http://huanshijiushiniu.github.io/2016/01/25/ReactiveCocoa2/</id>
     <published>2016-01-25T08:38:24.000Z</published>
     <updated>2018-08-06T04:03:34.829Z</updated>
     
@@ -425,17 +425,17 @@
     
     </summary>
     
-      <category term="Tech" scheme="http://yoursite.com/categories/Tech/"/>
+      <category term="Tech" scheme="http://huanshijiushiniu.github.io/categories/Tech/"/>
     
     
-      <category term="iOS" scheme="http://yoursite.com/tags/iOS/"/>
+      <category term="iOS" scheme="http://huanshijiushiniu.github.io/tags/iOS/"/>
     
   </entry>
   
   <entry>
     <title>ReactCocoa源码分析1</title>
-    <link href="http://yoursite.com/2016/01/25/ReactCocoa%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%901/"/>
-    <id>http://yoursite.com/2016/01/25/ReactCocoa源码分析1/</id>
+    <link href="http://huanshijiushiniu.github.io/2016/01/25/ReactCocoa%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%901/"/>
+    <id>http://huanshijiushiniu.github.io/2016/01/25/ReactCocoa源码分析1/</id>
     <published>2016-01-25T08:38:24.000Z</published>
     <updated>2018-08-06T04:03:34.828Z</updated>
     
@@ -450,17 +450,17 @@
     
     </summary>
     
-      <category term="Tech" scheme="http://yoursite.com/categories/Tech/"/>
+      <category term="Tech" scheme="http://huanshijiushiniu.github.io/categories/Tech/"/>
     
     
-      <category term="源码分析" scheme="http://yoursite.com/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"/>
+      <category term="源码分析" scheme="http://huanshijiushiniu.github.io/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"/>
     
   </entry>
   
   <entry>
     <title>MJExtension</title>
-    <link href="http://yoursite.com/2016/01/25/MJExtension/"/>
-    <id>http://yoursite.com/2016/01/25/MJExtension/</id>
+    <link href="http://huanshijiushiniu.github.io/2016/01/25/MJExtension/"/>
+    <id>http://huanshijiushiniu.github.io/2016/01/25/MJExtension/</id>
     <published>2016-01-25T08:38:24.000Z</published>
     <updated>2018-08-06T04:03:34.827Z</updated>
     
@@ -484,17 +484,17 @@
     
     </summary>
     
-      <category term="Tech" scheme="http://yoursite.com/categories/Tech/"/>
+      <category term="Tech" scheme="http://huanshijiushiniu.github.io/categories/Tech/"/>
     
     
-      <category term="源码分析" scheme="http://yoursite.com/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"/>
+      <category term="源码分析" scheme="http://huanshijiushiniu.github.io/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"/>
     
   </entry>
   
   <entry>
     <title>AFNetworking-NSOperation</title>
-    <link href="http://yoursite.com/2016/01/25/AFNetworking-NSOperation/"/>
-    <id>http://yoursite.com/2016/01/25/AFNetworking-NSOperation/</id>
+    <link href="http://huanshijiushiniu.github.io/2016/01/25/AFNetworking-NSOperation/"/>
+    <id>http://huanshijiushiniu.github.io/2016/01/25/AFNetworking-NSOperation/</id>
     <published>2016-01-25T08:38:24.000Z</published>
     <updated>2018-08-06T04:03:34.822Z</updated>
     
@@ -506,17 +506,17 @@
     
     </summary>
     
-      <category term="Tech" scheme="http://yoursite.com/categories/Tech/"/>
+      <category term="Tech" scheme="http://huanshijiushiniu.github.io/categories/Tech/"/>
     
     
-      <category term="源码分析" scheme="http://yoursite.com/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"/>
+      <category term="源码分析" scheme="http://huanshijiushiniu.github.io/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"/>
     
   </entry>
   
   <entry>
     <title>MLLeaksFinder</title>
-    <link href="http://yoursite.com/2016/01/25/MLLeaksFinder/"/>
-    <id>http://yoursite.com/2016/01/25/MLLeaksFinder/</id>
+    <link href="http://huanshijiushiniu.github.io/2016/01/25/MLLeaksFinder/"/>
+    <id>http://huanshijiushiniu.github.io/2016/01/25/MLLeaksFinder/</id>
     <published>2016-01-25T08:38:24.000Z</published>
     <updated>2018-08-06T04:03:34.828Z</updated>
     
@@ -529,10 +529,10 @@
     
     </summary>
     
-      <category term="Tech" scheme="http://yoursite.com/categories/Tech/"/>
+      <category term="Tech" scheme="http://huanshijiushiniu.github.io/categories/Tech/"/>
     
     
-      <category term="源码分析" scheme="http://yoursite.com/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"/>
+      <category term="源码分析" scheme="http://huanshijiushiniu.github.io/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"/>
     
   </entry>
   
